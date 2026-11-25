@@ -52,6 +52,7 @@ android/key.properties
 /coverage/
 remote_config_jsons/
 measure_tape_temp/
+assets/special splash
 
 
 # Symbolication related
