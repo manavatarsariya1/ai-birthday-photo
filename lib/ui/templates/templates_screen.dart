@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -6,6 +7,7 @@ import '../../constant/app_assets.dart';
 import '../../constant/app_strings.dart';
 import '../../controllers/templates/templates_controller.dart';
 import '../../theme/app_colors.dart';
+import '../../utils/common_autoplay_video.dart';
 import '../../utils/common_text.dart';
 
 class TemplatesScreen extends StatelessWidget {
@@ -170,79 +172,81 @@ class TemplatesScreen extends StatelessWidget {
 
           // ── 2-Column Templates Grid ───────────────────────────
           Expanded(
-            child: GridView.builder(
-              padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
-              physics: const ClampingScrollPhysics(),
-              itemCount: 6,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12.w,
-                mainAxisSpacing: 12.h,
-                childAspectRatio: 0.76,
-              ),
-              itemBuilder: (context, index) {
-                return Obx(() {
-                  final isVideo = controller.isVideoMode;
-                  return GestureDetector(
-                    onTap: () => controller.onTemplateTap(index),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16.r),
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Image.asset(
-                            AppAssets.templatesSample,
-                            fit: BoxFit.cover,
-                          ),
-                          if (isVideo) ...[
-                            Center(
-                              child: Container(
-                                width: 34.r,
-                                height: 34.r,
-                                decoration: BoxDecoration(
-                                  color: AppColors.blackColor
-                                      .withValues(alpha: 0.45),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  Icons.play_arrow_rounded,
-                                  size: 22.r,
-                                  color: AppColors.whiteColor,
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              left: 0,
-                              right: 0,
-                              bottom: 10.h,
-                              child: Center(
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 10.w,
-                                    vertical: 4.h,
+            child: Obx(() {
+              final items = controller.currentTemplates;
+              final count = items.isNotEmpty ? items.length : 6;
+              final isVideo = controller.isVideoMode;
+
+              return RefreshIndicator(
+                color: AppColors.primaryPink,
+                onRefresh: controller.fetchTemplates,
+                child: GridView.builder(
+                  padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: ClampingScrollPhysics(),
+                  ),
+                  itemCount: count,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12.w,
+                    mainAxisSpacing: 12.h,
+                    childAspectRatio: 0.76,
+                  ),
+                  itemBuilder: (context, index) {
+                    final imageUrl =
+                        items.isNotEmpty ? items[index].image : '';
+                    final pathLower =
+                        (Uri.tryParse(imageUrl)?.path ?? imageUrl)
+                            .toLowerCase();
+                    final isVideoFile = pathLower.endsWith('.mp4') ||
+                        pathLower.endsWith('.mov') ||
+                        pathLower.endsWith('.m4v') ||
+                        pathLower.endsWith('.webm') ||
+                        pathLower.endsWith('.mkv') ||
+                        pathLower.endsWith('.avi');
+
+                    return GestureDetector(
+                      onTap: () => controller.onTemplateTap(index),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16.r),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            imageUrl.startsWith('http')
+                                ? (isVideoFile
+                                    ? CommonAutoPlayVideo(videoUrl: imageUrl)
+                                    : CachedNetworkImage(
+                                        imageUrl: imageUrl,
+                                        fit: BoxFit.cover,
+                                        errorWidget: (_, __, ___) => Container(
+                                          color: AppColors.captionCardBg,
+                                          child: Icon(
+                                            Icons.image_outlined,
+                                            size: 28.r,
+                                            color: AppColors.blackColor
+                                                .withValues(alpha: 0.2),
+                                          ),
+                                        ),
+                                      ))
+                                : Container(
+                                    color: AppColors.captionCardBg,
+                                    child: Icon(
+                                      isVideo
+                                          ? Icons.videocam_outlined
+                                          : Icons.image_outlined,
+                                      size: 28.r,
+                                      color: AppColors.blackColor
+                                          .withValues(alpha: 0.2),
+                                    ),
                                   ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.blackColor
-                                        .withValues(alpha: 0.55),
-                                    borderRadius: BorderRadius.circular(14.r),
-                                  ),
-                                  child: CommonText.text(
-                                    title: 'Use Template',
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                    textColor: AppColors.whiteColor,
-                                  ),
-                                ),
-                              ),
-                            ),
                           ],
-                        ],
+                        ),
                       ),
-                    ),
-                  );
-                });
-              },
-            ),
+                    );
+                  },
+                ),
+              );
+            }),
           ),
         ],
       ),

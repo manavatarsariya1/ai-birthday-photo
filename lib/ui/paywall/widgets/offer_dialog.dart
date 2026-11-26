@@ -36,13 +36,44 @@ class OfferDialog extends StatefulWidget {
   State<OfferDialog> createState() => _OfferDialogState();
 }
 
-class _OfferDialogState extends State<OfferDialog> {
+class _OfferDialogState extends State<OfferDialog>
+    with SingleTickerProviderStateMixin {
   int _remainingSeconds = 29 * 3600 + 59 * 60 + 59; // 29:59:59
   Timer? _timer;
+  late final AnimationController _animController;
+  late final Animation<double> _dialogFade;
+  late final Animation<double> _dialogScale;
+  late final Animation<double> _letterSlide;
+  bool _isClosing = false;
 
   @override
   void initState() {
     super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 520),
+      reverseDuration: const Duration(milliseconds: 420),
+    );
+
+    _dialogFade = CurvedAnimation(
+      parent: _animController,
+      curve: const Interval(0.0, 0.45, curve: Curves.easeOut),
+    );
+    _dialogScale = Tween<double>(begin: 0.92, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animController,
+        curve: const Interval(0.0, 0.5, curve: Curves.easeOutCubic),
+      ),
+    );
+    _letterSlide = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _animController,
+        curve: const Interval(0.25, 1.0, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    _animController.forward();
+
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (_remainingSeconds > 0 && mounted) {
         setState(() => _remainingSeconds--);
@@ -50,9 +81,20 @@ class _OfferDialogState extends State<OfferDialog> {
     });
   }
 
+  Future<void> _closeWithAnimation(VoidCallback afterClose) async {
+    if (_isClosing) return;
+    _isClosing = true;
+    await _animController.reverse();
+    if (mounted) {
+      Get.back();
+      afterClose();
+    }
+  }
+
   @override
   void dispose() {
     _timer?.cancel();
+    _animController.dispose();
     super.dispose();
   }
 
@@ -65,19 +107,23 @@ class _OfferDialogState extends State<OfferDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: AppColors.transparentColor,
-      insetPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 20.h),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 370.w),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final modalW = constraints.maxWidth;
-            final s = modalW / 370.0;
+    return FadeTransition(
+      opacity: _dialogFade,
+      child: ScaleTransition(
+        scale: _dialogScale,
+        child: Dialog(
+          backgroundColor: AppColors.transparentColor,
+          insetPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 20.h),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 370.w),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final modalW = constraints.maxWidth;
+                final s = modalW / 370.0;
 
-            return Stack(
-              clipBehavior: Clip.none,
-              children: [
+                return Stack(
+                  clipBehavior: Clip.none,
+                  children: [
                 // ── LAYER 1: Back Envelope Base (Full Width) ──
                 Positioned(
                   top: 148 * s,
@@ -107,11 +153,19 @@ class _OfferDialogState extends State<OfferDialog> {
                   left: modalW * 0.07,
                   width: modalW * 0.86,
                   height: 292 * s,
-                  child: Container(
+                  child: AnimatedBuilder(
+                    animation: _letterSlide,
+                    builder: (context, child) {
+                      return Transform.translate(
+                        offset: Offset(0, 175 * s * _letterSlide.value),
+                        child: child,
+                      );
+                    },
+                    child: Container(
                     padding: EdgeInsets.fromLTRB(
                       16 * s,
-                      34 * s,
-                      16 * s,
+                      14 * s,
+                      14 * s,
                       24 * s,
                     ),
                     decoration: BoxDecoration(
@@ -139,36 +193,42 @@ class _OfferDialogState extends State<OfferDialog> {
                     child: Stack(
                       clipBehavior: Clip.none,
                       children: [
-                        // Close (×) button
+                        // Close (×) button (inside bounds for instant 1st-tap)
                         Positioned(
-                          top: -20 * s,
-                          right: -2 * s,
+                          top: 0,
+                          right: 0,
                           child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
                             onTap: () {
                               LogEventManager.logEvent(
                                 'offer_dialog_close_click',
                               );
-                              Get.back();
-                              widget.onDismiss();
+                              _closeWithAnimation(widget.onDismiss);
                             },
-                            child: Container(
-                              width: 30 * s,
-                              height: 30 * s,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFF6D6EA),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                Icons.close,
-                                size: 15 * s,
-                                color: const Color(0xFF1A1A1A),
+                            child: Padding(
+                              padding: EdgeInsets.all(4 * s),
+                              child: Container(
+                                width: 30 * s,
+                                height: 30 * s,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFF6D6EA),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.close,
+                                  size: 15 * s,
+                                  color: const Color(0xFF1A1A1A),
+                                ),
                               ),
                             ),
                           ),
                         ),
-                        Column(
-                          children: [
-                            SizedBox(height: 6 * s),
+                        SizedBox(
+                          width: double.infinity,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(height: 36 * s),
                             RichText(
                               textAlign: TextAlign.center,
                               text: TextSpan(
@@ -264,8 +324,10 @@ class _OfferDialogState extends State<OfferDialog> {
                             ),
                           ],
                         ),
+                        ),
                       ],
                     ),
+                  ),
                   ),
                 ),
 
@@ -458,6 +520,8 @@ class _OfferDialogState extends State<OfferDialog> {
                             // Primary Gradient CTA Button
                             CommonButton.primary(
                               title: 'Claim Discount Now',
+                              height: 44 * s,
+                              fontSize: 14 * s / 1.sp,
                               onTap: () {
                                 LogEventManager.logEvent(
                                   'offer_dialog_claim_click',
@@ -475,8 +539,7 @@ class _OfferDialogState extends State<OfferDialog> {
                                 LogEventManager.logEvent(
                                   'offer_dialog_later_click',
                                 );
-                                Get.back();
-                                widget.onDismiss();
+                                _closeWithAnimation(widget.onDismiss);
                               },
                               behavior: HitTestBehavior.opaque,
                               child: Padding(
@@ -503,6 +566,8 @@ class _OfferDialogState extends State<OfferDialog> {
           },
         ),
       ),
+    ),
+    ),
     );
   }
 }

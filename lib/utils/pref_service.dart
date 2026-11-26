@@ -7,6 +7,7 @@ class PrefService {
   // Constants keys
   static const String accessToken = 'access_token';
   static const String refreshToken = 'refresh_token';
+  static const String userCredits = 'user_credits';
   static const String userName = 'user_name';
   static const String isAppLock = 'is_app_lock';
   static const String deviceId = 'device_id';
@@ -16,6 +17,7 @@ class PrefService {
 
   // Attribution & Marketing
   static const String isIntroDone = 'is_intro_done';
+  static const String isLanguageDone = 'is_language_done';
   static const String isMarketingUser = 'is_marketing_user';
   static const String userAttributionType = 'user_attribution_type';
   static const String isPremium = 'is_premium';

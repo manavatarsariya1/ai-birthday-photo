@@ -81,6 +81,7 @@ export '../utils/common_button.dart';
 export '../utils/exit_bottom_sheet.dart';
 export '../utils/status_bar_wrapper.dart';
 export '../utils/loading_overlay.dart';
+export '../utils/common_autoplay_video.dart';
 
 // ============================================================
 // App — Services

@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/models/language_model.dart';
 import '../../routes/app_routes.dart';
 import '../../services/log_event_manager.dart';
+import '../../utils/pref_service.dart';
 
 class LanguageController extends GetxController {
   static const String _prefSelectedLanguage = 'selected_language_code';
@@ -102,6 +103,7 @@ class LanguageController extends GetxController {
     );
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_prefSelectedLanguage, selectedCode.value);
+    await PrefService.setValue(PrefService.isLanguageDone, true);
     await Get.updateLocale(Locale(selectedCode.value));
     Get.offAllNamed(AppRoutes.onboarding);
   }

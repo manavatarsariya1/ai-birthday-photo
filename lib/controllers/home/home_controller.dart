@@ -1,16 +1,32 @@
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
 import '../../constant/app_assets.dart';
+import '../../constant/app_constant.dart';
 import '../../constant/app_strings.dart';
 import '../../data/models/home_models.dart';
+import '../../data/models/home_sections_model.dart';
 import '../../routes/app_routes.dart';
+import '../../services/api_service.dart';
 import '../../services/log_event_manager.dart';
 import '../../theme/app_colors.dart';
 import '../../ui/caption/caption_screen.dart';
+import '../../utils/pref_service.dart';
 
 class HomeController extends GetxController {
   final RxInt selectedTabIndex = 0.obs;
-  final RxInt coinsCount = 100.obs;
+  final RxInt coinsCount = 0.obs;
+
+  // Dynamic Home Sections from API
+  final RxString heroPhotoUrl = ''.obs;
+  final RxString heroVideoUrl = ''.obs;
+  final RxString heroPhotoTitle = 'Birthday Photo'.obs;
+  final RxString heroVideoTitle = 'Birthday Video'.obs;
+  final RxString trendingSectionTitle = ''.obs;
+  final RxList<TrendingTemplateModel> dynamicTrendingTemplates =
+      <TrendingTemplateModel>[].obs;
 
   List<CelebrationToolModel> get tools => [
     CelebrationToolModel(
@@ -102,7 +118,68 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    coinsCount.value = PrefService.getInt(PrefService.userCredits) ?? 0;
     LogEventManager.logEvent('home_view');
+    _fetchHomeSections();
+  }
+
+  Future<void> refreshHomeSections() => _fetchHomeSections();
+
+  Future<void> _fetchHomeSections() async {
+    try {
+      final response = await ApiService.get(url: '${baseUrl}home-sections/app');
+      if (response != null && response.statusCode == 200) {
+        final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+        final parsed = HomeSectionsResponse.fromJson(decoded);
+        if (!parsed.success || parsed.data.isEmpty) return;
+
+        for (final section in parsed.data) {
+          final lowerTitle = section.title.toLowerCase();
+          if (lowerTitle.contains('hero')) {
+            for (final item in section.items) {
+              if (item.name.toLowerCase().contains('video')) {
+                if (item.name.isNotEmpty) heroVideoTitle.value = item.name;
+                final url = item.videoSquare;
+                if (url != null && url.isNotEmpty) {
+                  heroVideoUrl.value = url;
+                }
+              } else {
+                if (item.name.isNotEmpty) heroPhotoTitle.value = item.name;
+                final url = item.imgSquare;
+                if (url != null && url.isNotEmpty) {
+                  heroPhotoUrl.value = url;
+                }
+              }
+            }
+          } else {
+            if (section.title.isNotEmpty) {
+              trendingSectionTitle.value = section.title;
+            }
+            if (section.items.isNotEmpty) {
+              dynamicTrendingTemplates.assignAll(
+                section.items
+                    .map(
+                      (item) => TrendingTemplateModel(
+                        id: item.id,
+                        title: item.name,
+                        imagePath:
+                            (item.imgSquare != null &&
+                                item.imgSquare!.isNotEmpty)
+                            ? item.imgSquare!
+                            : AppAssets.sampleTemplate,
+                      ),
+                    )
+                    .toList(),
+              );
+            }
+          }
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Home sections error: $e');
+      }
+    }
   }
 
   void onTabChanged(int index) {

@@ -12,6 +12,7 @@ import '../../services/log_event_manager.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/common_button.dart';
 import '../../utils/common_text.dart';
+import '../../utils/common_unlock_dialog.dart';
 import 'result_preview_screen.dart';
 
 class ResultScreen extends StatefulWidget {
@@ -219,49 +220,70 @@ class _ResultScreenState extends State<ResultScreen> {
                       // Bottom-right: Watermark (App Name)
                       if (_showWatermark)
                         Positioned(
-                          right: 10.w,
-                          bottom: 10.h,
-                          child: Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 10.w,
-                                  vertical: 5.h,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.blackColor
-                                      .withValues(alpha: 0.45),
-                                  borderRadius: BorderRadius.circular(8.r),
-                                ),
-                                child: CommonText.text(
-                                  title: AppStrings.appName,
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.w600,
-                                  textColor: AppColors.whiteColor,
-                                ),
+                          right: 4.w,
+                          bottom: 4.h,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {
+                              CommonUnlockDialog.show(
+                                title: 'Remove Watermark',
+                                subtitle:
+                                    'Watch an ad to remove the watermark, or Go premium for watermark free downloads',
+                                buttonTitle: 'Remove Watermark (Ad)',
+                                onPrimaryTap: () {
+                                  setState(() => _showWatermark = false);
+                                },
+                                onUpgradeTap: () =>
+                                    Get.toNamed(AppRoutes.paywall),
+                              );
+                            },
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                top: 8.r,
+                                right: 8.r,
+                                left: 4.w,
+                                bottom: 4.h,
                               ),
-                              Positioned(
-                                top: -6.r,
-                                right: -6.r,
-                                child: GestureDetector(
-                                  onTap: () => Get.toNamed(AppRoutes.paywall),
-                                  child: Container(
-                                    width: 16.r,
-                                    height: 16.r,
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.whiteColor,
-                                      shape: BoxShape.circle,
+                              child: Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 10.w,
+                                      vertical: 5.h,
                                     ),
-                                    child: Icon(
-                                      Icons.close,
-                                      size: 11.r,
-                                      color: AppColors.blackColor,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.blackColor
+                                          .withValues(alpha: 0.45),
+                                      borderRadius: BorderRadius.circular(8.r),
+                                    ),
+                                    child: CommonText.text(
+                                      title: AppStrings.appName,
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w600,
+                                      textColor: AppColors.whiteColor,
                                     ),
                                   ),
-                                ),
+                                  Positioned(
+                                    top: -6.r,
+                                    right: -6.r,
+                                    child: Container(
+                                      width: 18.r,
+                                      height: 18.r,
+                                      decoration: const BoxDecoration(
+                                        color: AppColors.whiteColor,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        Icons.close,
+                                        size: 12.r,
+                                        color: AppColors.blackColor,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
                     ],

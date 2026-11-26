@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -8,6 +9,7 @@ import '../../constant/app_strings.dart';
 import '../../controllers/home/home_controller.dart';
 import '../../data/models/home_models.dart';
 import '../../theme/app_colors.dart';
+import '../../utils/common_autoplay_video.dart';
 import '../../utils/common_text.dart';
 import '../templates/templates_screen.dart';
 
@@ -25,9 +27,14 @@ class HomeScreen extends StatelessWidget {
           return const TemplatesScreen();
         }
         return SafeArea(
-          child: SingleChildScrollView(
-          physics: const ClampingScrollPhysics(),
-          padding: EdgeInsets.zero,
+          child: RefreshIndicator(
+            color: AppColors.primaryPink,
+            onRefresh: controller.refreshHomeSections,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: ClampingScrollPhysics(),
+              ),
+              padding: EdgeInsets.zero,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -128,28 +135,34 @@ class HomeScreen extends StatelessWidget {
               // ── Top 2 Hero Cards (Photo & Video) ──────────────
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _HeroFeatureCard(
-                        imagePath: AppAssets.samplePhoto,
-                        title: 'Birthday Photo',
-                        subtitle: 'Luxe Studio Magic',
-                        onTap: controller.onBirthdayPhotoTap,
+                child: Obx(() {
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: _HeroFeatureCard(
+                          imagePath: controller.heroPhotoUrl.value.isNotEmpty
+                              ? controller.heroPhotoUrl.value
+                              : AppAssets.samplePhoto,
+                          title: controller.heroPhotoTitle.value,
+                          subtitle: 'Luxe Studio Magic',
+                          onTap: controller.onBirthdayPhotoTap,
+                        ),
                       ),
-                    ),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: _HeroFeatureCard(
-                        imagePath: AppAssets.sampleVideo,
-                        title: 'Birthday Video',
-                        subtitle: 'Cinematic 4K Reels',
-                        isVideo: true,
-                        onTap: controller.onBirthdayVideoTap,
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: _HeroFeatureCard(
+                          imagePath: controller.heroVideoUrl.value.isNotEmpty
+                              ? controller.heroVideoUrl.value
+                              : AppAssets.sampleVideo,
+                          title: controller.heroVideoTitle.value,
+                          subtitle: 'Cinematic 4K Reels',
+                          isVideo: true,
+                          onTap: controller.onBirthdayVideoTap,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  );
+                }),
               ),
 
               SizedBox(height: 20.h),
@@ -199,13 +212,17 @@ class HomeScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    CommonText.text(
-                      title: AppStrings.trendingTemplates,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.8,
-                      textColor: AppColors.blackColor,
-                    ),
+                    Obx(() => CommonText.text(
+                          title: (controller
+                                      .trendingSectionTitle.value.isNotEmpty
+                                  ? controller.trendingSectionTitle.value
+                                  : AppStrings.trendingTemplates)
+                              .toUpperCase(),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.8,
+                          textColor: AppColors.blackColor,
+                        )),
                     GestureDetector(
                       onTap: controller.onViewAllTemplatesTap,
                       child: CommonText.text(
@@ -223,20 +240,25 @@ class HomeScreen extends StatelessWidget {
 
               SizedBox(
                 height: 156.h,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
-                  physics: const ClampingScrollPhysics(),
-                  itemCount: controller.trendingTemplates.length,
-                  separatorBuilder: (_, __) => SizedBox(width: 10.w),
-                  itemBuilder: (context, index) {
-                    final tpl = controller.trendingTemplates[index];
-                    return _TrendingTemplateCard(
-                      template: tpl,
-                      onTap: () => controller.onTemplateTap(tpl.id),
-                    );
-                  },
-                ),
+                child: Obx(() {
+                  final list = controller.dynamicTrendingTemplates.isNotEmpty
+                      ? controller.dynamicTrendingTemplates
+                      : controller.trendingTemplates;
+                  return ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
+                    physics: const ClampingScrollPhysics(),
+                    itemCount: list.length,
+                    separatorBuilder: (_, __) => SizedBox(width: 10.w),
+                    itemBuilder: (context, index) {
+                      final tpl = list[index];
+                      return _TrendingTemplateCard(
+                        template: tpl,
+                        onTap: () => controller.onTemplateTap(tpl.id),
+                      );
+                    },
+                  );
+                }),
               ),
 
               SizedBox(height: 20.h),
@@ -299,6 +321,7 @@ class HomeScreen extends StatelessWidget {
               SizedBox(height: 20.h),
             ],
           ),
+        ),
         ),
         );
       }),
@@ -391,7 +414,29 @@ class _HeroFeatureCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Image.asset(imagePath, fit: BoxFit.cover),
+              imagePath.startsWith('http')
+                  ? (isVideo &&
+                          ((Uri.tryParse(imagePath)?.path ?? imagePath)
+                                  .toLowerCase()
+                                  .endsWith('.mp4') ||
+                              (Uri.tryParse(imagePath)?.path ?? imagePath)
+                                  .toLowerCase()
+                                  .endsWith('.mov') ||
+                              (Uri.tryParse(imagePath)?.path ?? imagePath)
+                                  .toLowerCase()
+                                  .endsWith('.webm'))
+                      ? CommonAutoPlayVideo(videoUrl: imagePath)
+                      : CachedNetworkImage(
+                          imageUrl: imagePath,
+                          fit: BoxFit.cover,
+                          errorWidget: (_, __, ___) => Image.asset(
+                            isVideo
+                                ? AppAssets.sampleVideo
+                                : AppAssets.samplePhoto,
+                            fit: BoxFit.cover,
+                          ),
+                        ))
+                  : Image.asset(imagePath, fit: BoxFit.cover),
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -405,7 +450,7 @@ class _HeroFeatureCard extends StatelessWidget {
                   ),
                 ),
               ),
-              if (isVideo)
+              if (isVideo && !imagePath.startsWith('http'))
                 Center(
                   child: Container(
                     width: 34.r,
@@ -529,7 +574,16 @@ class _TrendingTemplateCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Image.asset(template.imagePath, fit: BoxFit.cover),
+              template.imagePath.startsWith('http')
+                  ? CachedNetworkImage(
+                      imageUrl: template.imagePath,
+                      fit: BoxFit.cover,
+                      errorWidget: (_, __, ___) => Image.asset(
+                        AppAssets.sampleTemplate,
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : Image.asset(template.imagePath, fit: BoxFit.cover),
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(

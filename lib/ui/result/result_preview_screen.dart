@@ -89,49 +89,58 @@ class ResultPreviewScreen extends StatelessWidget {
                       ),
                       if (showWatermark)
                         Positioned(
-                          right: 12.w,
-                          bottom: 12.h,
-                          child: Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 12.w,
-                                  vertical: 6.h,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.blackColor
-                                      .withValues(alpha: 0.45),
-                                  borderRadius: BorderRadius.circular(8.r),
-                                ),
-                                child: CommonText.text(
-                                  title: AppStrings.appName,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  textColor: AppColors.whiteColor,
-                                ),
+                          right: 6.w,
+                          bottom: 6.h,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: onRemoveWatermark,
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                top: 8.r,
+                                right: 8.r,
+                                left: 4.w,
+                                bottom: 4.h,
                               ),
-                              Positioned(
-                                top: -6.r,
-                                right: -6.r,
-                                child: GestureDetector(
-                                  onTap: onRemoveWatermark,
-                                  child: Container(
-                                    width: 16.r,
-                                    height: 16.r,
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.whiteColor,
-                                      shape: BoxShape.circle,
+                              child: Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 12.w,
+                                      vertical: 6.h,
                                     ),
-                                    child: Icon(
-                                      Icons.close,
-                                      size: 11.r,
-                                      color: AppColors.blackColor,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.blackColor
+                                          .withValues(alpha: 0.45),
+                                      borderRadius: BorderRadius.circular(8.r),
+                                    ),
+                                    child: CommonText.text(
+                                      title: AppStrings.appName,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      textColor: AppColors.whiteColor,
                                     ),
                                   ),
-                                ),
+                                  Positioned(
+                                    top: -6.r,
+                                    right: -6.r,
+                                    child: Container(
+                                      width: 18.r,
+                                      height: 18.r,
+                                      decoration: const BoxDecoration(
+                                        color: AppColors.whiteColor,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        Icons.close,
+                                        size: 12.r,
+                                        color: AppColors.blackColor,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
                     ],

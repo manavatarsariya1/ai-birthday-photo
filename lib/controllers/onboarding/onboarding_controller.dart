@@ -6,6 +6,7 @@ import '../../constant/app_strings.dart';
 import '../../data/models/onboarding_page_model.dart';
 import '../../routes/app_routes.dart';
 import '../../services/log_event_manager.dart';
+import '../../utils/pref_service.dart';
 
 class OnboardingController extends GetxController {
   final PageController pageController = PageController();
@@ -45,7 +46,7 @@ class OnboardingController extends GetxController {
     LogEventManager.logEvent('onboarding_${index + 1}_view');
   }
 
-  void onNextTap() {
+  Future<void> onNextTap() async {
     final idx = currentIndex.value;
     LogEventManager.logEvent('onboarding_${idx + 1}_next_click');
     if (idx < pages.length - 1) {
@@ -54,6 +55,7 @@ class OnboardingController extends GetxController {
         curve: Curves.easeInOut,
       );
     } else {
+      await PrefService.setValue(PrefService.isIntroDone, true);
       Get.offAllNamed(AppRoutes.paywall);
     }
   }
@@ -69,9 +71,10 @@ class OnboardingController extends GetxController {
     }
   }
 
-  void onSkipTap() {
+  Future<void> onSkipTap() async {
     final idx = currentIndex.value;
     LogEventManager.logEvent('onboarding_${idx + 1}_skip_click');
+    await PrefService.setValue(PrefService.isIntroDone, true);
     Get.offAllNamed(AppRoutes.paywall);
   }
 
