@@ -1,6 +1,6 @@
 const Map<String, String> en = {
   'ad': 'Ad',
-  'appName': 'Flutter Master Boilerplate',
+  'appName': 'AI Birthday',
   'continue': 'Continue',
   'exitAppTitle': 'Exit Application',
   'exitAppDescription': 'Are you sure you want to exit the application?',
@@ -90,6 +90,60 @@ const Map<String, String> en = {
   'off30': '30% Off',
   'autoRenewable': 'Auto Renewable, Cancel Anytime',
 
+  // Home
+  'homeTitle': 'AI Birthday Photo & Video',
+  'homeSubtitle': 'Make every moment special',
+  'celebrationTools': 'CELEBRATION TOOLS',
+  'toolCaption': 'Caption',
+  'toolCaptionSub': 'Poetic & Fun',
+  'toolReminder': 'Reminder',
+  'toolReminderSub': 'Never Forget',
+  'toolAgeCalc': 'Age Calc',
+  'toolAgeCalcSub': 'Milestones',
+  'toolAnniversary': 'Anniversary',
+  'toolAnniversarySub': 'Romantic AI',
+  'toolCardMaker': 'Card Maker',
+  'toolCardMakerSub': 'Custom Art',
+  'toolCreations': 'Creations',
+  'toolCreationsSub': 'Saved 4K',
+  'trendingTemplates': 'TRENDING TEMPLATES',
+  'upcomingBirthdays': 'UPCOMING BIRTHDAYS',
+  'addNew': '+ Add New',
+  'wishLabel': 'Wish ✨',
+  'navHome': 'Home',
+  'navTemplates': 'Templates',
+  'navReminders': 'Reminders',
+  'navSettings': 'Settings',
+
+  // Templates
+  'exploreTemplates': 'Explore Templates',
+  'exploreTemplatesSubtitle': 'Find a look for every celebration',
+  'tabPhoto': 'Photo',
+  'tabVideo': 'Video',
+  'tabCard': 'Card',
+
+  // Tips, Upload & Image Source Sheets
+  'tipsTitle': 'Tips For Better Results',
+  'tipsSubtitle': 'A great photo makes a great AI portraits',
+  'recommended': 'Recommended',
+  'frontFacing': 'Front-facing',
+  'goodLighting': 'Good lighting',
+  'sharpFocus': 'Sharp focus',
+  'avoidThesePhotos': 'Avoid these photos',
+  'blurredFace': 'Blurred face',
+  'faceCovered': 'Face covered',
+  'multiplePeople': 'Multiple people',
+  'choosePhoto': 'Choose Photo',
+  'pleaseSelectPhoto': 'Please Select a Photo',
+  'pleaseSelectPhotoSubtitle':
+      'Add a clear photo of male and female to create your beautiful moment.',
+  'supportedFormats': 'Support JPG, PNG, HEIC',
+  'master4kRendering': 'Master 4K resolution & priority rendering',
+  'generate': 'Generate',
+  'creatingBirthdayMagic': 'Creating Your Birthday Magic',
+  'creatingBirthdayMagicSub':
+      'Your personalized celebration is coming to life',
+
   // No Data
   'noDataFound': 'No Data Found!',
 
@@ -136,7 +190,8 @@ const Map<String, String> en = {
   'processingPhoto': 'Processing photo...',
 
   // AI Generation
-  'tipHdExport': "Tip: High-quality, clear face photos give the best AI results.",
+  'tipHdExport':
+      "Tip: High-quality, clear face photos give the best AI results.",
   'generateImage': 'Generate Image',
   'generationFailed': 'Generation Failed',
   'generationFailedDesc':
@@ -282,8 +337,7 @@ const Map<String, String> en = {
   'balanceColon': 'Balance:',
   'coinsDeductedNote': 'Coins deducted only after generation complete',
   'createNow': 'Create Now',
-  'pleaseSelectPhotoToProceed':
-      'Please upload required photo(s) to continue',
+  'pleaseSelectPhotoToProceed': 'Please upload required photo(s) to continue',
 
   // Face Detection
   'noFaceDetected':
@@ -304,7 +358,8 @@ const Map<String, String> en = {
   'loadingAd': 'Loading ad...',
   // Uninstall Flow
   'uninstallSorryTitle': 'Sorry for the inconvenience!',
-  'uninstallSorrySubtitle': 'Could you tell us what went wrong with your baby photo experience?',
+  'uninstallSorrySubtitle':
+      'Could you tell us what went wrong with your baby photo experience?',
   'uninstallIssueGeneration': 'AI baby generation takes too long or failed',
   'uninstallActionRetry': 'Generate\nNow',
   'uninstallIssueStyle': 'Generated photos don\'t match theme',
@@ -332,9 +387,11 @@ const Map<String, String> en = {
   'uninstallOtherHint': 'Please tell us more...',
   'uninstallEnterOtherReason': 'Please enter your reason for uninstalling',
   'uninstallThankYouTitle': 'Thank you for using Lifepix AI!',
-  'uninstallThankYouSubtitle': 'We appreciate your time. Hope to see you back soon to create more beautiful baby memories.',
+  'uninstallThankYouSubtitle':
+      'We appreciate your time. Hope to see you back soon to create more beautiful baby memories.',
   'noMoreCoins': 'No More Coins',
-  'noMoreCoinsSubtitle': 'You don\'t have enough coins to generate this image. Get more coins to continue creating amazing photos!',
+  'noMoreCoinsSubtitle':
+      'You don\'t have enough coins to generate this image. Get more coins to continue creating amazing photos!',
   'coinsUnit': 'Coins',
   'getMoreCoins': 'Get More Coins',
   'maybeLater': 'Maybe Later',
@@ -342,7 +399,8 @@ const Map<String, String> en = {
   'pressBackAgainToExit': 'Press back again to exit',
   'mirrorEffect': 'Mirror Effect',
   'dislikeFeedbackTitle': 'AI Generation Quality Issue',
-  'dislikeFeedbackDescription': 'I was not satisfied with the quality of this generated image. Please improve the result.',
+  'dislikeFeedbackDescription':
+      'I was not satisfied with the quality of this generated image. Please improve the result.',
   'preview': 'Preview',
   'login': 'Login',
   'loginTitle': 'Sign In',
@@ -365,7 +423,8 @@ const Map<String, String> en = {
 
   // Exit Without Save Keys
   'exitWithoutSaveTitle': 'Exit Without Saving?',
-  'exitWithoutSaveDesc': 'Are you sure you want to exit without saving your creation?',
+  'exitWithoutSaveDesc':
+      'Are you sure you want to exit without saving your creation?',
   'exitWithoutSaveButton': 'Exit Without Saving',
   'restorePurchaseSuccess': 'Purchases restored successfully.',
   'purchaseSuccessful': 'Purchase successful!',
@@ -375,7 +434,8 @@ const Map<String, String> en = {
 
   // Onboarding 4 & Age Selection Keys
   'onboardingTitle4': 'Who Will You Create For?',
-  'onboardingDesc4': 'Choose who you want to create Ai image for family, couple and child.',
+  'onboardingDesc4':
+      'Choose who you want to create Ai image for family, couple and child.',
   'family': 'Family',
   'familyDesc': 'Create photo for parents, kids & Family moments.',
   'couple': 'Couple',
@@ -406,6 +466,7 @@ const Map<String, String> en = {
   'firstBirthday': '1st Birthday',
   // Save Photo Before Proceed Dialog Keys
   'savePhotoBeforeProceedTitle': 'Save Photo?',
-  'savePhotoBeforeProceedDesc': 'Do you want to save this photo before moving to the next creation?',
+  'savePhotoBeforeProceedDesc':
+      'Do you want to save this photo before moving to the next creation?',
   'dontSave': 'Don\'t Save',
 };

@@ -42,6 +42,22 @@ class AppAssets {
   static const String sampleTemplate = 'assets/sample.webp';
   static const String samplePhoto = 'assets/images/sample/photo.webp';
   static const String sampleVideo = 'assets/images/sample/video.webp';
+  static const String templatesSample =
+      'assets/images/templates/templates sample.webp';
+
+  // ── Tips / Suggestions Assets ─────────────────────────────
+  static const String suggestionApproval1 =
+      'assets/images/suggestions/suggestion approval 1.webp';
+  static const String suggestionApproval2 =
+      'assets/images/suggestions/suggestion approval 2.webp';
+  static const String suggestionApproval3 =
+      'assets/images/suggestions/suggestion approval 3.webp';
+  static const String suggestionReject1 =
+      'assets/images/suggestions/suggestion reject 1.webp';
+  static const String suggestionReject2 =
+      'assets/images/suggestions/suggestion reject 2.webp';
+  static const String suggestionReject3 =
+      'assets/images/suggestions/suggestion reject 3.webp';
 
   static const String icPremiumCrown = 'assets/icons/Premium crown.svg';
   static const String icHomeCaption = 'assets/icons/Home Caption.svg';

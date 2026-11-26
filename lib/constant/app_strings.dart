@@ -82,4 +82,66 @@ class AppStrings {
   static String get restorePurchase => 'restorePurchase'.tr;
   static String get termsOfUse => 'termsOfUse'.tr;
   static String get privacyPolicy => 'privacyPolicy'.tr;
+
+  // ── Home Screen ───────────────────────────────────────────
+  static String get homeTitle => 'homeTitle'.tr;
+  static String get homeSubtitle => 'homeSubtitle'.tr;
+  static String get celebrationTools => 'celebrationTools'.tr;
+  static String get toolCaption => 'toolCaption'.tr;
+  static String get toolCaptionSub => 'toolCaptionSub'.tr;
+  static String get toolReminder => 'toolReminder'.tr;
+  static String get toolReminderSub => 'toolReminderSub'.tr;
+  static String get toolAgeCalc => 'toolAgeCalc'.tr;
+  static String get toolAgeCalcSub => 'toolAgeCalcSub'.tr;
+  static String get toolAnniversary => 'toolAnniversary'.tr;
+  static String get toolAnniversarySub => 'toolAnniversarySub'.tr;
+  static String get toolCardMaker => 'toolCardMaker'.tr;
+  static String get toolCardMakerSub => 'toolCardMakerSub'.tr;
+  static String get toolCreations => 'toolCreations'.tr;
+  static String get toolCreationsSub => 'toolCreationsSub'.tr;
+  static String get trendingTemplates => 'trendingTemplates'.tr;
+  static String get viewAll => 'viewAll'.tr;
+  static String get upcomingBirthdays => 'upcomingBirthdays'.tr;
+  static String get addNew => 'addNew'.tr;
+  static String get wishLabel => 'wishLabel'.tr;
+  static String get navHome => 'navHome'.tr;
+  static String get navTemplates => 'navTemplates'.tr;
+  static String get navReminders => 'navReminders'.tr;
+  static String get navSettings => 'navSettings'.tr;
+
+  // ── Templates Screen ──────────────────────────────────────
+  static String get exploreTemplates => 'exploreTemplates'.tr;
+  static String get exploreTemplatesSubtitle => 'exploreTemplatesSubtitle'.tr;
+  static String get tabPhoto => 'tabPhoto'.tr;
+  static String get tabVideo => 'tabVideo'.tr;
+  static String get tabCard => 'tabCard'.tr;
+
+  // ── Tips, Upload & Image Source Sheets ────────────────────
+  static String get tipsTitle => 'tipsTitle'.tr;
+  static String get tipsSubtitle => 'tipsSubtitle'.tr;
+  static String get recommended => 'recommended'.tr;
+  static String get frontFacing => 'frontFacing'.tr;
+  static String get goodLighting => 'goodLighting'.tr;
+  static String get sharpFocus => 'sharpFocus'.tr;
+  static String get avoidThesePhotos => 'avoidThesePhotos'.tr;
+  static String get blurredFace => 'blurredFace'.tr;
+  static String get faceCovered => 'faceCovered'.tr;
+  static String get multiplePeople => 'multiplePeople'.tr;
+  static String get choosePhoto => 'choosePhoto'.tr;
+  static String get pleaseSelectPhoto => 'pleaseSelectPhoto'.tr;
+  static String get pleaseSelectPhotoSubtitle => 'pleaseSelectPhotoSubtitle'.tr;
+  static String get addImage => 'addImage'.tr;
+  static String get babyMaleFemale => 'babyMaleFemale'.tr;
+  static String get supportedFormats => 'supportedFormats'.tr;
+  static String get upgradeToPro => 'upgradeToPro'.tr;
+  static String get master4kRendering => 'master4kRendering'.tr;
+  static String get claim => 'claim'.tr;
+  static String get createNow => 'createNow'.tr;
+  static String get camera => 'camera'.tr;
+  static String get takeAPhoto => 'takeAPhoto'.tr;
+  static String get gallery => 'gallery'.tr;
+  static String get chooseExisting => 'chooseExisting'.tr;
+  static String get generate => 'generate'.tr;
+  static String get creatingBirthdayMagic => 'creatingBirthdayMagic'.tr;
+  static String get creatingBirthdayMagicSub => 'creatingBirthdayMagicSub'.tr;
 }

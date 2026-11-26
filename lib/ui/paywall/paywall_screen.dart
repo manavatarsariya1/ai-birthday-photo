@@ -27,14 +27,11 @@ class _PaywallScreenState extends State<PaywallScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _autoScrollTimer = Timer.periodic(
-        const Duration(milliseconds: 16),
-        (_) {
-          if (!_isCarouselPaused && _carouselController.hasClients) {
-            _carouselController.jumpTo(_carouselController.offset + 0.65);
-          }
-        },
-      );
+      _autoScrollTimer = Timer.periodic(const Duration(milliseconds: 16), (_) {
+        if (!_isCarouselPaused && _carouselController.hasClients) {
+          _carouselController.jumpTo(_carouselController.offset + 0.65);
+        }
+      });
     });
   }
 
@@ -92,8 +89,9 @@ class _PaywallScreenState extends State<PaywallScreen> {
                           title: AppStrings.restore,
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
-                          textColor:
-                              AppColors.blackColor.withValues(alpha: 0.55),
+                          textColor: AppColors.blackColor.withValues(
+                            alpha: 0.55,
+                          ),
                         ),
                       ),
                     ),
@@ -123,8 +121,13 @@ class _PaywallScreenState extends State<PaywallScreen> {
                         child: ShaderMask(
                           shaderCallback: (bounds) =>
                               AppColors.primaryGradient.createShader(
-                            Rect.fromLTWH(0, 0, bounds.width, bounds.height),
-                          ),
+                                Rect.fromLTWH(
+                                  0,
+                                  0,
+                                  bounds.width,
+                                  bounds.height,
+                                ),
+                              ),
                           child: CommonText.text(
                             title: AppStrings.birthdayWord,
                             fontSize: 23,
@@ -170,9 +173,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     physics: const ClampingScrollPhysics(),
                     itemBuilder: (context, index) {
                       final items = controller.carouselItems;
-                      return _CarouselCard(
-                        item: items[index % items.length],
-                      );
+                      return _CarouselCard(item: items[index % items.length]);
                     },
                     separatorBuilder: (_, __) => SizedBox(width: 10.w),
                     itemCount: 100000,
@@ -393,11 +394,7 @@ class _FeatureItem extends StatelessWidget {
             gradient: AppColors.primaryGradient,
             shape: BoxShape.circle,
           ),
-          child: Icon(
-            Icons.check,
-            size: 12.r,
-            color: AppColors.whiteColor,
-          ),
+          child: Icon(Icons.check, size: 12.r, color: AppColors.whiteColor),
         ),
         SizedBox(width: 8.w),
         Expanded(
@@ -481,8 +478,9 @@ class _PlanCard extends StatelessWidget {
                           title: plan.period,
                           fontSize: 12,
                           fontWeight: FontWeight.w400,
-                          textColor:
-                              AppColors.blackColor.withValues(alpha: 0.5),
+                          textColor: AppColors.blackColor.withValues(
+                            alpha: 0.5,
+                          ),
                         ),
                       ],
                     ),

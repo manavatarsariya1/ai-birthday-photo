@@ -46,6 +46,7 @@ dependencies:
   # ── Images & Media ─────────────────────────────────────────
   cached_network_image: ^3.4.1
   image_picker: ^1.2.3
+  camera: ^0.11.0+2
 
   # ── Notifications / Feedback ───────────────────────────────
   fluttertoast: ^8.2.12
@@ -106,6 +107,8 @@ flutter:
     - assets/sample.webp
     - assets/images/
     - assets/images/sample/
+    - assets/images/templates/
+    - assets/images/suggestions/
     - assets/images/onboarding/
     - assets/images/paywall/
     - assets/icons/

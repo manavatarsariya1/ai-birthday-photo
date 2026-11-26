@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 
 import '../../constant/app_assets.dart';
+import '../../constant/app_strings.dart';
 import '../../data/models/home_models.dart';
 import '../../routes/app_routes.dart';
 import '../../services/log_event_manager.dart';
@@ -10,51 +11,51 @@ class HomeController extends GetxController {
   final RxInt selectedTabIndex = 0.obs;
   final RxInt coinsCount = 100.obs;
 
-  final List<CelebrationToolModel> tools = const [
+  List<CelebrationToolModel> get tools => [
     CelebrationToolModel(
       id: 'caption',
-      title: 'Caption',
-      subtitle: 'Poetic & Fun',
+      title: AppStrings.toolCaption,
+      subtitle: AppStrings.toolCaptionSub,
       iconPath: AppAssets.icHomeCaption,
       bgColor: AppColors.toolPinkBg,
       iconGradient: AppColors.toolPinkGradient,
     ),
     CelebrationToolModel(
       id: 'reminder',
-      title: 'Reminder',
-      subtitle: 'Never Forget',
+      title: AppStrings.toolReminder,
+      subtitle: AppStrings.toolReminderSub,
       iconPath: AppAssets.icHomeReminder,
       bgColor: AppColors.toolGreenBg,
       iconGradient: AppColors.toolGreenGradient,
     ),
     CelebrationToolModel(
       id: 'age_calc',
-      title: 'Age Calc',
-      subtitle: 'Milestones',
+      title: AppStrings.toolAgeCalc,
+      subtitle: AppStrings.toolAgeCalcSub,
       iconPath: AppAssets.icHomeCalc,
       bgColor: AppColors.toolBlueBg,
       iconGradient: AppColors.toolBlueGradient,
     ),
     CelebrationToolModel(
       id: 'anniversary',
-      title: 'Anniversary',
-      subtitle: 'Romantic AI',
+      title: AppStrings.toolAnniversary,
+      subtitle: AppStrings.toolAnniversarySub,
       iconPath: AppAssets.icHomeAnniversary,
       bgColor: AppColors.toolPeachBg,
       iconGradient: AppColors.toolPeachGradient,
     ),
     CelebrationToolModel(
       id: 'card_maker',
-      title: 'Card Maker',
-      subtitle: 'Custom Art',
+      title: AppStrings.toolCardMaker,
+      subtitle: AppStrings.toolCardMakerSub,
       iconPath: AppAssets.icHomeCardMaker,
       bgColor: AppColors.toolPurpleBg,
       iconGradient: AppColors.toolPurpleGradient,
     ),
     CelebrationToolModel(
       id: 'creations',
-      title: 'Creations',
-      subtitle: 'Saved 4K',
+      title: AppStrings.toolCreations,
+      subtitle: AppStrings.toolCreationsSub,
       iconPath: AppAssets.icHomeCreations,
       bgColor: AppColors.toolCyanBg,
       iconGradient: AppColors.toolCyanGradient,

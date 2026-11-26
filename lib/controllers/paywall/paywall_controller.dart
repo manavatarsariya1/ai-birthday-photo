@@ -75,7 +75,11 @@ class PaywallController extends GetxController {
 
   void onCloseTap() {
     LogEventManager.logEvent('paywall_back_click');
-    Get.offAllNamed(AppRoutes.home);
+    if (Get.key.currentState?.canPop() ?? false) {
+      Get.back();
+    } else {
+      Get.offAllNamed(AppRoutes.home);
+    }
   }
 
   void onRestoreTap() {

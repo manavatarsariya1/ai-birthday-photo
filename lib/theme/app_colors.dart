@@ -24,6 +24,9 @@ class AppColors {
   // ── Indicator Colors ──────────────────────────────────────
   static const Color indicatorActive = Color(0xFFFA3D8A);
   static const Color indicatorInactive = Color(0xFFFFCAF5);
+  static const Color uploadBorderPink = Color(0xFFFFC2F4);
+  static const Color uploadIconBorderPink = Color(0xFFFEB4F4);
+  static const Color sourceCardBorderPink = Color(0xFFFDDFFF);
 
   // ── Home Tool Card Colors ─────────────────────────────────
   static const Color toolPinkBg = Color(0xFFF8E4F2);

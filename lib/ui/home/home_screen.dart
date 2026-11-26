@@ -4,10 +4,12 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 import '../../constant/app_assets.dart';
+import '../../constant/app_strings.dart';
 import '../../controllers/home/home_controller.dart';
 import '../../data/models/home_models.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/common_text.dart';
+import '../templates/templates_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -18,8 +20,12 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.whiteColor,
-      body: SafeArea(
-        child: SingleChildScrollView(
+      body: Obx(() {
+        if (controller.selectedTabIndex.value == 1) {
+          return const TemplatesScreen();
+        }
+        return SafeArea(
+          child: SingleChildScrollView(
           physics: const ClampingScrollPhysics(),
           padding: EdgeInsets.zero,
           child: Column(
@@ -37,14 +43,14 @@ class HomeScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         CommonText.text(
-                          title: 'AI Birthday Photo & Video',
+                          title: AppStrings.homeTitle,
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           textColor: AppColors.blackColor,
                         ),
                         SizedBox(height: 2.h),
                         CommonText.text(
-                          title: 'Make every moment special',
+                          title: AppStrings.homeSubtitle,
                           fontSize: 11.5,
                           fontWeight: FontWeight.w400,
                           textColor: AppColors.blackColor.withValues(
@@ -155,7 +161,7 @@ class HomeScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     CommonText.text(
-                      title: 'CELEBRATION TOOLS',
+                      title: AppStrings.celebrationTools,
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.8,
@@ -194,7 +200,7 @@ class HomeScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     CommonText.text(
-                      title: 'TRENDING TEMPLATES',
+                      title: AppStrings.trendingTemplates,
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.8,
@@ -203,7 +209,7 @@ class HomeScreen extends StatelessWidget {
                     GestureDetector(
                       onTap: controller.onViewAllTemplatesTap,
                       child: CommonText.text(
-                        title: 'View All',
+                        title: AppStrings.viewAll,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         textColor:
@@ -244,7 +250,7 @@ class HomeScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         CommonText.text(
-                          title: 'UPCOMING BIRTHDAYS',
+                          title: AppStrings.upcomingBirthdays,
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.8,
@@ -262,7 +268,7 @@ class HomeScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(14.r),
                             ),
                             child: CommonText.text(
-                              title: '+ Add New',
+                              title: AppStrings.addNew,
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                               textColor: AppColors.primaryPink,
@@ -294,7 +300,8 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
+        );
+      }),
 
       // ── Bottom Navigation Bar ─────────────────────────────────
       bottomNavigationBar: Obx(() {
@@ -318,7 +325,7 @@ class HomeScreen extends StatelessWidget {
                   Expanded(
                     child: _BottomNavItem(
                       iconPath: AppAssets.icBottomHome,
-                      label: 'Home',
+                      label: AppStrings.navHome,
                       isSelected: current == 0,
                       onTap: () => controller.onTabChanged(0),
                     ),
@@ -326,7 +333,7 @@ class HomeScreen extends StatelessWidget {
                   Expanded(
                     child: _BottomNavItem(
                       iconPath: AppAssets.icBottomTemplates,
-                      label: 'Templates',
+                      label: AppStrings.navTemplates,
                       iconSize: 19.r,
                       isSelected: current == 1,
                       onTap: () => controller.onTabChanged(1),
@@ -335,7 +342,7 @@ class HomeScreen extends StatelessWidget {
                   Expanded(
                     child: _BottomNavItem(
                       iconPath: AppAssets.icBottomReminders,
-                      label: 'Reminders',
+                      label: AppStrings.navReminders,
                       isSelected: current == 2,
                       onTap: () => controller.onTabChanged(2),
                     ),
@@ -343,7 +350,7 @@ class HomeScreen extends StatelessWidget {
                   Expanded(
                     child: _BottomNavItem(
                       iconPath: AppAssets.icBottomSettings,
-                      label: 'Settings',
+                      label: AppStrings.navSettings,
                       isSelected: current == 3,
                       onTap: () => controller.onTabChanged(3),
                     ),
@@ -380,7 +387,7 @@ class _HeroFeatureCard extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16.r),
         child: SizedBox(
-          height: 186.h,
+          height: 206.h,
           child: Stack(
             fit: StackFit.expand,
             children: [
@@ -622,7 +629,7 @@ class _UpcomingBirthdayTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: CommonText.text(
-                  title: 'Wish ✨',
+                  title: AppStrings.wishLabel,
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
                   textColor: AppColors.whiteColor,
