@@ -7,8 +7,6 @@ import 'package:get/get.dart';
 import 'constant/app_constant.dart';
 import 'localization/app_translations.dart';
 import 'routes/app_pages.dart';
-import 'services/ad_service/ad_managers/revenue_threshold_manager.dart';
-import 'services/consent_service.dart';
 import 'services/log_event_manager.dart';
 import 'theme/app_theme.dart';
 import 'utils/pref_service.dart';
@@ -39,19 +37,6 @@ Future<void> main() async {
   // 2. Initialize SharedPreferences & Local storage
   await PrefService.init();
 
-  // 3. Initialize Revenue Threshold Manager (Taichi Model)
-  await RevenueThresholdManager.init();
-
-  // 4. Initialize Mobile Ads & Consent
-  try {
-    await ConsentService.handleGDPR();
-    await ConsentService.initializeMobileAds();
-  } catch (e) {
-    if (kDebugMode) {
-      debugPrint('[Main] MobileAds init error: $e');
-    }
-  }
-
   runApp(const MyApp());
 }
 
@@ -77,7 +62,7 @@ class MyApp extends StatelessWidget {
           initialRoute: AppPages.initial,
           getPages: AppPages.pages,
           navigatorObservers: [
-            LogEventManager.observer,
+            if (LogEventManager.observer != null) LogEventManager.observer!,
           ],
         );
       },

@@ -18,6 +18,8 @@ const Map<String, String> en = {
   // Common Actions
   'cancel': 'Cancel',
   'continueText': 'Continue',
+  'splashTitle': 'AI Birthday',
+  'splashSubtitle': 'Photo & Video Maker',
   'delete': 'Delete',
   'discard': 'Discard',
   'save': 'Save',
@@ -47,6 +49,46 @@ const Map<String, String> en = {
 
   // Language
   'language': 'Language',
+  'chooseYour': 'Choose Your ',
+  'languageSubtitle':
+      'Select your preferred language to personalize your birthday creation experience',
+
+  // Onboarding
+  'onboarding1TitlePrefix': 'Your ',
+  'onboarding1TitleHighlight': 'Birthday',
+  'onboarding1TitleSuffix': ', Your Glow',
+  'onboarding1Desc': 'Create stunning birthday photos with AI',
+  'onboarding2TitlePrefix': 'Make ',
+  'onboarding2TitleHighlight': 'Memories',
+  'onboarding2TitleSuffix': ' Move',
+  'onboarding2Desc': 'Bring your birthday moments to life',
+  'onboarding3TitlePrefix': 'Celebrate with ',
+  'onboarding3TitleHighlight': 'Words',
+  'onboarding3Desc': 'Find the perfect caption for every celebration',
+
+  // Paywall
+  'unlockYour': 'Unlock Your ',
+  'birthdayWord': 'Birthday',
+  'magic': ' Magic',
+  'paywallSubtitle':
+      'Create stunning AI birthday photos, videos and personalized wishes',
+  'birthdayImage': 'Birthday Image',
+  'birthdayVideo': 'Birthday Video',
+  'birthdayCaption': 'Birthday Caption',
+  'anniversaryMoment': 'Anniversary Moment',
+  'paywallFeature1': 'Creative Birthday & Anniversary Photos',
+  'paywallFeature2': 'Access Premium Templates',
+  'paywallFeature3': 'Generate Cinematic Birthday Videos',
+  'paywallFeature4': 'Get More AI Generation Credits',
+  'perYear': '/Year',
+  'perMonth': '/month',
+  'perWeek': '/Week',
+  'credits1200': '1200 Credits',
+  'credits600': '600 Credits',
+  'credits200': '200 Credits',
+  'off50': '50% Off',
+  'off30': '30% Off',
+  'autoRenewable': 'Auto Renewable, Cancel Anytime',
 
   // No Data
   'noDataFound': 'No Data Found!',

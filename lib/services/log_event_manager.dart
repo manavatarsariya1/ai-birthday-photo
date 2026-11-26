@@ -13,8 +13,10 @@ class LogEventManager {
   static FirebaseAnalytics get _analytics =>
       _analyticsInstance ??= FirebaseAnalytics.instance;
 
-  static FirebaseAnalyticsObserver get observer =>
-      FirebaseAnalyticsObserver(analytics: _analytics);
+  static FirebaseAnalyticsObserver? get observer {
+    if (Firebase.apps.isEmpty) return null;
+    return FirebaseAnalyticsObserver(analytics: _analytics);
+  }
 
   // ---------------------------------------------------------------------------
   // Core Logger
