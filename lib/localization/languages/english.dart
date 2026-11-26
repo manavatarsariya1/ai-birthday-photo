@@ -144,6 +144,15 @@ const Map<String, String> en = {
   'creatingBirthdayMagicSub':
       'Your personalized celebration is coming to life',
 
+  // Birthday Caption
+  'birthdayCaptionTitle': 'Birthday Caption',
+  'savedCaption': 'Saved Caption',
+  'enterNameToPersonalize': 'Enter a name to personalized the wish',
+  'enterName': 'Enter Name',
+  'generateCaption': 'Generate Caption',
+  'forMoreUniqueCaption': 'For more unique and creative caption',
+  'noSavedCaptions': 'No saved captions yet!',
+
   // No Data
   'noDataFound': 'No Data Found!',
 

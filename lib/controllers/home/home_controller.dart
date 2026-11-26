@@ -6,6 +6,7 @@ import '../../data/models/home_models.dart';
 import '../../routes/app_routes.dart';
 import '../../services/log_event_manager.dart';
 import '../../theme/app_colors.dart';
+import '../../ui/caption/caption_screen.dart';
 
 class HomeController extends GetxController {
   final RxInt selectedTabIndex = 0.obs;
@@ -128,6 +129,9 @@ class HomeController extends GetxController {
 
   void onToolTap(String toolId) {
     LogEventManager.logEvent('home_tool_click', {'tool': toolId});
+    if (toolId == 'caption') {
+      Get.to(() => const CaptionScreen());
+    }
   }
 
   void onTemplateTap(String templateId) {

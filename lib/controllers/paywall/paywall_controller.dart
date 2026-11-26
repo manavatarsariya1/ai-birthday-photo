@@ -5,6 +5,7 @@ import '../../constant/app_strings.dart';
 import '../../data/models/paywall_plan_model.dart';
 import '../../routes/app_routes.dart';
 import '../../services/log_event_manager.dart';
+import '../../ui/paywall/widgets/offer_dialog.dart';
 
 class PaywallController extends GetxController {
   final RxString selectedPlanId = 'yearly'.obs;
@@ -75,11 +76,16 @@ class PaywallController extends GetxController {
 
   void onCloseTap() {
     LogEventManager.logEvent('paywall_back_click');
-    if (Get.key.currentState?.canPop() ?? false) {
-      Get.back();
-    } else {
-      Get.offAllNamed(AppRoutes.home);
-    }
+    OfferDialog.show(
+      onClaim: onContinueTap,
+      onDismiss: () {
+        if (Get.key.currentState?.canPop() ?? false) {
+          Get.back();
+        } else {
+          Get.offAllNamed(AppRoutes.home);
+        }
+      },
+    );
   }
 
   void onRestoreTap() {

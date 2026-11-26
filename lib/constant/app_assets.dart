@@ -71,4 +71,12 @@ class AppAssets {
   static const String icBottomTemplates = 'assets/icons/Bottom Templates.svg';
   static const String icBottomReminders = 'assets/icons/Bottom Reminders.svg';
   static const String icBottomSettings = 'assets/icons/Bottom Settings.svg';
+
+  // ── Offer Dialog Assets ───────────────────────────────────
+  static const String offerDialogRibbon =
+      'assets/images/offer dialog/Offer Dialog Ribbon.webp';
+  static const String icOfferMeta = 'assets/icons/Offer Meta.svg';
+  static const String icOfferVideos = 'assets/icons/Offer Videos.svg';
+  static const String icOfferTemplates = 'assets/icons/Offer Templates.svg';
+  static const String icOfferWatermark = 'assets/icons/Offer Watermark.svg';
 }

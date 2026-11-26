@@ -144,4 +144,13 @@ class AppStrings {
   static String get generate => 'generate'.tr;
   static String get creatingBirthdayMagic => 'creatingBirthdayMagic'.tr;
   static String get creatingBirthdayMagicSub => 'creatingBirthdayMagicSub'.tr;
+
+  // ── Birthday Caption ──────────────────────────────────────
+  static String get birthdayCaptionTitle => 'birthdayCaptionTitle'.tr;
+  static String get savedCaption => 'savedCaption'.tr;
+  static String get enterNameToPersonalize => 'enterNameToPersonalize'.tr;
+  static String get enterName => 'enterName'.tr;
+  static String get generateCaption => 'generateCaption'.tr;
+  static String get forMoreUniqueCaption => 'forMoreUniqueCaption'.tr;
+  static String get noSavedCaptions => 'noSavedCaptions'.tr;
 }
