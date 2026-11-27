@@ -19,10 +19,10 @@ class TemplatesController extends GetxController {
       <TemplateCategoryModel>[].obs;
 
   List<String> get types => [
-        AppStrings.tabPhoto,
-        AppStrings.tabVideo,
-        AppStrings.tabCard,
-      ];
+    AppStrings.tabPhoto,
+    AppStrings.tabVideo,
+    AppStrings.tabCard,
+  ];
 
   bool get isVideoMode => selectedTypeIndex.value == 1;
 
@@ -37,24 +37,7 @@ class TemplatesController extends GetxController {
     }
   }
 
-  List<String> get categories {
-    if (apiCategories.isNotEmpty) {
-      return apiCategories.map((e) => e.name).toList();
-    }
-    return isVideoMode
-        ? const [
-            'Blow the Candle',
-            'Confetti Magic',
-            'Balloon Surprise',
-            'Cake Cut',
-          ]
-        : const [
-            'Trending',
-            'Luxury Birthday',
-            'Birthday Girl',
-            'Birthday Boy',
-          ];
-  }
+  List<String> get categories => apiCategories.map((e) => e.name).toList();
 
   List<TemplateItemModel> get currentTemplates {
     if (apiCategories.isEmpty) return [];
@@ -96,31 +79,29 @@ class TemplatesController extends GetxController {
     if (selectedTypeIndex.value == index) return;
     selectedTypeIndex.value = index;
     selectedCategoryIndex.value = 0;
+    apiCategories.clear();
     LogEventManager.logEvent('templates_type_click', {'type': types[index]});
     fetchTemplates();
   }
 
   void onCategoryChanged(int index) {
     selectedCategoryIndex.value = index;
-    LogEventManager.logEvent(
-      'templates_category_click',
-      {'category': categories[index]},
-    );
+    LogEventManager.logEvent('templates_category_click', {
+      'category': categories[index],
+    });
   }
 
   void onTemplateTap(int index) {
-    LogEventManager.logEvent(
-      'templates_item_click',
-      {
-        'index': index,
-        'type': types[selectedTypeIndex.value],
-        'category': categories[selectedCategoryIndex.value],
-      },
-    );
+    LogEventManager.logEvent('templates_item_click', {
+      'index': index,
+      'type': types[selectedTypeIndex.value],
+      'category': categories[selectedCategoryIndex.value],
+    });
     if (selectedTypeIndex.value == 2) {
       final items = currentTemplates;
-      final imageUrl =
-          (items.isNotEmpty && index < items.length) ? items[index].image : '';
+      final imageUrl = (items.isNotEmpty && index < items.length)
+          ? items[index].image
+          : '';
       Get.toNamed(AppRoutes.addCardDetails, arguments: imageUrl);
       return;
     }

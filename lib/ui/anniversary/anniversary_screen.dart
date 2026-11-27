@@ -12,6 +12,7 @@ import '../../services/log_event_manager.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/app_toast.dart';
 import '../../utils/common_photo_picker_sheet.dart';
+import '../../utils/common_shimmer_box.dart';
 import '../../utils/common_svg_image.dart';
 import '../../utils/common_text.dart';
 import '../crop/crop_screen.dart';
@@ -67,6 +68,19 @@ class _AnniversaryScreenState extends State<AnniversaryScreen> {
               height: 36.h,
               child: Obx(() {
                 final cats = controller.categories;
+                if (controller.isLoading.value && cats.isEmpty) {
+                  return ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: 4,
+                    separatorBuilder: (_, __) => SizedBox(width: 8.w),
+                    itemBuilder: (_, __) => SizedBox(
+                      width: 86.w,
+                      child: CommonShimmerBox(borderRadius: 9999.r),
+                    ),
+                  );
+                }
                 if (cats.isEmpty) return const SizedBox.shrink();
                 return ListView.separated(
                   scrollDirection: Axis.horizontal,
@@ -138,6 +152,9 @@ class _AnniversaryScreenState extends State<AnniversaryScreen> {
                       childAspectRatio: 0.76,
                     ),
                     itemBuilder: (_, index) {
+                      if (controller.isLoading.value && items.isEmpty) {
+                        return const CommonShimmerBox();
+                      }
                       final imageUrl = items.isNotEmpty
                           ? items[index].image
                           : '';

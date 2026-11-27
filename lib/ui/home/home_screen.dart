@@ -10,6 +10,7 @@ import '../../controllers/home/home_controller.dart';
 import '../../data/models/home_models.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/common_autoplay_video.dart';
+import '../../utils/common_shimmer_box.dart';
 import '../../utils/common_text.dart';
 import '../reminders/reminders_screen.dart';
 import '../settings/settings_screen.dart';
@@ -144,6 +145,26 @@ class HomeScreen extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: Obx(() {
+                  if (controller.isLoadingHomeSections.value &&
+                      controller.heroPhotoUrl.value.isEmpty) {
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 185.h,
+                            child: const CommonShimmerBox(borderRadius: 18),
+                          ),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: SizedBox(
+                            height: 185.h,
+                            child: const CommonShimmerBox(borderRadius: 18),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
                   return Row(
                     children: [
                       Expanded(
@@ -249,6 +270,20 @@ class HomeScreen extends StatelessWidget {
               SizedBox(
                 height: 156.h,
                 child: Obx(() {
+                  if (controller.isLoadingHomeSections.value &&
+                      controller.dynamicTrendingTemplates.isEmpty) {
+                    return ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: 4,
+                      separatorBuilder: (_, __) => SizedBox(width: 12.w),
+                      itemBuilder: (_, __) => SizedBox(
+                        width: 118.w,
+                        child: const CommonShimmerBox(borderRadius: 16),
+                      ),
+                    );
+                  }
                   final list = controller.dynamicTrendingTemplates.isNotEmpty
                       ? controller.dynamicTrendingTemplates
                       : controller.trendingTemplates;
@@ -309,19 +344,36 @@ class HomeScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 12.h),
 
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: controller.upcomingBirthdays.length,
-                      separatorBuilder: (_, __) => SizedBox(height: 10.h),
-                      itemBuilder: (context, index) {
-                        final item = controller.upcomingBirthdays[index];
-                        return _UpcomingBirthdayTile(
-                          item: item,
-                          onWishTap: () => controller.onWishTap(item.id),
+                    Obx(() {
+                      final items = controller.upcomingBirthdays;
+                      if (items.isEmpty) {
+                        return Padding(
+                          padding: EdgeInsets.symmetric(vertical: 12.h),
+                          child: Center(
+                            child: CommonText.text(
+                              title: 'No upcoming birthdays this month',
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w400,
+                              textColor:
+                                  AppColors.blackColor.withValues(alpha: 0.45),
+                            ),
+                          ),
                         );
-                      },
-                    ),
+                      }
+                      return ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: items.length,
+                        separatorBuilder: (_, __) => SizedBox(height: 10.h),
+                        itemBuilder: (context, index) {
+                          final item = items[index];
+                          return _UpcomingBirthdayTile(
+                            item: item,
+                            onWishTap: () => controller.onWishTap(item.id),
+                          );
+                        },
+                      );
+                    }),
                   ],
                 ),
               ),

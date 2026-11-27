@@ -8,6 +8,7 @@ import '../../constant/app_strings.dart';
 import '../../controllers/templates/templates_controller.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/common_autoplay_video.dart';
+import '../../utils/common_shimmer_box.dart';
 import '../../utils/common_text.dart';
 
 class TemplatesScreen extends StatelessWidget {
@@ -123,6 +124,19 @@ class TemplatesScreen extends StatelessWidget {
             height: 36.h,
             child: Obx(() {
               final cats = controller.categories;
+              if (controller.isLoading.value && cats.isEmpty) {
+                return ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: 4,
+                  separatorBuilder: (_, __) => SizedBox(width: 8.w),
+                  itemBuilder: (_, __) => SizedBox(
+                    width: 86.w,
+                    child: CommonShimmerBox(borderRadius: 9999.r),
+                  ),
+                );
+              }
               return ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -193,6 +207,9 @@ class TemplatesScreen extends StatelessWidget {
                     childAspectRatio: 0.76,
                   ),
                   itemBuilder: (context, index) {
+                    if (controller.isLoading.value && items.isEmpty) {
+                      return const CommonShimmerBox();
+                    }
                     final imageUrl =
                         items.isNotEmpty ? items[index].image : '';
                     final pathLower =

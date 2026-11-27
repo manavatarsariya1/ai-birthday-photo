@@ -16,6 +16,7 @@ import '../../theme/app_colors.dart';
 import '../../ui/anniversary/anniversary_screen.dart';
 import '../../ui/caption/caption_screen.dart';
 import '../../utils/pref_service.dart';
+import '../reminders/reminders_controller.dart';
 import '../templates/templates_controller.dart';
 
 class HomeController extends GetxController {
@@ -23,6 +24,7 @@ class HomeController extends GetxController {
   final RxInt coinsCount = 0.obs;
 
   // Dynamic Home Sections from API
+  final RxBool isLoadingHomeSections = true.obs;
   final RxString heroPhotoUrl = ''.obs;
   final RxString heroVideoUrl = ''.obs;
   final RxString heroPhotoTitle = 'Birthday Photo'.obs;
@@ -100,23 +102,28 @@ class HomeController extends GetxController {
     ),
   ];
 
-  final List<UpcomingBirthdayModel> upcomingBirthdays = const [
-    UpcomingBirthdayModel(
-      id: '1',
-      initials: 'EM',
-      title: "Emma's 28th Birthday",
-      subtitle: 'Today',
-      avatarColor: AppColors.avatarPurple,
-      isToday: true,
-    ),
-    UpcomingBirthdayModel(
-      id: '2',
-      initials: 'AL',
-      title: 'Alexander Davis',
-      subtitle: 'Next Week (Nov 2)',
-      avatarColor: AppColors.avatarBlue,
-    ),
-  ];
+  List<UpcomingBirthdayModel> get upcomingBirthdays {
+    final remindersCtrl = Get.isRegistered<RemindersController>()
+        ? Get.find<RemindersController>()
+        : Get.put(RemindersController());
+    final list = remindersCtrl.reminders
+        .where((r) => r.daysUntil <= 30)
+        .toList()
+      ..sort((a, b) => a.daysUntil.compareTo(b.daysUntil));
+    return list
+        .take(5)
+        .map(
+          (r) => UpcomingBirthdayModel(
+            id: r.id,
+            initials: r.initials,
+            title: r.displayTitle,
+            subtitle: r.displaySubtitle,
+            avatarColor: r.avatarColor,
+            isToday: r.daysUntil == 0,
+          ),
+        )
+        .toList();
+  }
 
   @override
   void onInit() {
@@ -130,6 +137,7 @@ class HomeController extends GetxController {
   Future<void> refreshHomeSections() => _fetchHomeSections();
 
   Future<void> _fetchHomeSections() async {
+    isLoadingHomeSections.value = true;
     try {
       final response = await ApiService.get(url: '${baseUrl}home-sections/app');
       if (response != null && response.statusCode == 200) {
@@ -183,6 +191,8 @@ class HomeController extends GetxController {
       if (kDebugMode) {
         debugPrint('Home sections error: $e');
       }
+    } finally {
+      isLoadingHomeSections.value = false;
     }
   }
 
@@ -202,10 +212,20 @@ class HomeController extends GetxController {
 
   void onBirthdayPhotoTap() {
     LogEventManager.logEvent('home_birthday_photo_click');
+    final templatesCtrl = Get.isRegistered<TemplatesController>()
+        ? Get.find<TemplatesController>()
+        : Get.put(TemplatesController());
+    templatesCtrl.onTypeChanged(0);
+    selectedTabIndex.value = 1;
   }
 
   void onBirthdayVideoTap() {
     LogEventManager.logEvent('home_birthday_video_click');
+    final templatesCtrl = Get.isRegistered<TemplatesController>()
+        ? Get.find<TemplatesController>()
+        : Get.put(TemplatesController());
+    templatesCtrl.onTypeChanged(1);
+    selectedTabIndex.value = 1;
   }
 
   void onToolTap(String toolId) {
