@@ -78,5 +78,6 @@ class AppAssets {
   static const String icOfferMeta = 'assets/icons/Offer Meta.svg';
   static const String icOfferVideos = 'assets/icons/Offer Videos.svg';
   static const String icOfferTemplates = 'assets/icons/Offer Templates.svg';
+  static const String imgNoReminders = 'assets/images/reminder/no reminder.webp';
   static const String icOfferWatermark = 'assets/icons/Offer Watermark.svg';
 }

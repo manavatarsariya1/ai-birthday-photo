@@ -11,6 +11,8 @@ import '../../data/models/home_models.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/common_autoplay_video.dart';
 import '../../utils/common_text.dart';
+import '../reminders/reminders_screen.dart';
+import '../settings/settings_screen.dart';
 import '../templates/templates_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -25,6 +27,12 @@ class HomeScreen extends StatelessWidget {
       body: Obx(() {
         if (controller.selectedTabIndex.value == 1) {
           return const TemplatesScreen();
+        }
+        if (controller.selectedTabIndex.value == 2) {
+          return const RemindersScreen();
+        }
+        if (controller.selectedTabIndex.value == 3) {
+          return const SettingsScreen();
         }
         return SafeArea(
           child: RefreshIndicator(

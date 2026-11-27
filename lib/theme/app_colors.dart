@@ -70,6 +70,7 @@ class AppColors {
   static const Color avatarPurple = Color(0xFFD946EF);
   static const Color avatarBlue = Color(0xFF6366F1);
   static const Color captionCardBg = Color(0xFFF6F6F6);
+  static const Color reminderCardBg = Color(0xFFF6F6F6);
 
   // ── Boilerplate Compatibility Aliases ─────────────────────
   static const Color primaryColor = primaryPink;

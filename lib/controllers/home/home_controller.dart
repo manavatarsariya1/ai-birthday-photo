@@ -208,6 +208,10 @@ class HomeController extends GetxController {
     LogEventManager.logEvent('home_tool_click', {'tool': toolId});
     if (toolId == 'caption') {
       Get.to(() => const CaptionScreen());
+    } else if (toolId == 'reminder') {
+      selectedTabIndex.value = 2;
+    } else if (toolId == 'age_calc') {
+      Get.toNamed(AppRoutes.ageCalculator);
     }
   }
 
@@ -222,6 +226,7 @@ class HomeController extends GetxController {
 
   void onAddNewBirthdayTap() {
     LogEventManager.logEvent('home_add_birthday_click');
+    selectedTabIndex.value = 2;
   }
 
   void onWishTap(String id) {

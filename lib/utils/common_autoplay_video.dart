@@ -22,6 +22,18 @@ class _CommonAutoPlayVideoState extends State<CommonAutoPlayVideo> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) return;
+    if (TickerMode.of(context)) {
+      controller.play();
+    } else {
+      controller.pause();
+    }
+  }
+
+  @override
   void didUpdateWidget(covariant CommonAutoPlayVideo oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.videoUrl != widget.videoUrl) {
