@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
@@ -162,13 +163,26 @@ class FeedbackScreen extends StatelessWidget {
                                     isSelected ? null : AppColors.reminderCardBg,
                                 borderRadius: BorderRadius.circular(9999.r),
                               ),
-                              child: CommonText.text(
-                                title: topic,
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w600,
-                                textColor: isSelected
-                                    ? AppColors.whiteColor
-                                    : AppColors.blackColor,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    _topicIcon(topic),
+                                    size: 15.r,
+                                    color: isSelected
+                                        ? AppColors.whiteColor
+                                        : AppColors.primaryPink,
+                                  ),
+                                  SizedBox(width: 6.w),
+                                  CommonText.text(
+                                    title: topic,
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                    textColor: isSelected
+                                        ? AppColors.whiteColor
+                                        : AppColors.blackColor,
+                                  ),
+                                ],
                               ),
                             ),
                           );
@@ -226,6 +240,11 @@ class FeedbackScreen extends StatelessWidget {
                               controller: controller.feedbackController,
                               maxLines: 6,
                               maxLength: 500,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.deny(
+                                  RegExp(r'^\s+'),
+                                ),
+                              ],
                               style: TextStyle(
                                 fontSize: 13.5.sp,
                                 color: AppColors.blackColor,
@@ -264,5 +283,24 @@ class FeedbackScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  IconData _topicIcon(String topic) {
+    switch (topic) {
+      case 'New Style / Template':
+        return Icons.auto_awesome_outlined;
+      case 'AI Photo Quality':
+        return Icons.camera_outlined;
+      case 'Video Generation':
+        return Icons.movie_creation_outlined;
+      case 'Birthday Reminders':
+        return Icons.notifications_active_outlined;
+      case 'Bug or Glitch':
+        return Icons.bug_report_outlined;
+      case 'Other Ideas':
+        return Icons.lightbulb_outline_rounded;
+      default:
+        return Icons.auto_awesome_outlined;
+    }
   }
 }

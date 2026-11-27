@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../controllers/settings/settings_controller.dart';
+import '../../routes/app_routes.dart';
 import '../../services/log_event_manager.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/app_toast.dart';
@@ -105,7 +106,7 @@ class SettingsScreen extends StatelessWidget {
                   icon: Icons.photo_library_outlined,
                   title: 'Creation',
                   subtitle: 'Stored AI videos & portrait sets',
-                  onTap: () => AppToast.showInfo('Coming soon'),
+                  onTap: () => Get.toNamed(AppRoutes.creation),
                 ),
                 _divider(),
                 _SettingsTile(

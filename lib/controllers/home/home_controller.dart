@@ -11,9 +11,12 @@ import '../../data/models/home_sections_model.dart';
 import '../../routes/app_routes.dart';
 import '../../services/api_service.dart';
 import '../../services/log_event_manager.dart';
+import '../../services/shortcut_service.dart';
 import '../../theme/app_colors.dart';
+import '../../ui/anniversary/anniversary_screen.dart';
 import '../../ui/caption/caption_screen.dart';
 import '../../utils/pref_service.dart';
+import '../templates/templates_controller.dart';
 
 class HomeController extends GetxController {
   final RxInt selectedTabIndex = 0.obs;
@@ -121,6 +124,7 @@ class HomeController extends GetxController {
     coinsCount.value = PrefService.getInt(PrefService.userCredits) ?? 0;
     LogEventManager.logEvent('home_view');
     _fetchHomeSections();
+    Future.microtask(ShortcutService.init);
   }
 
   Future<void> refreshHomeSections() => _fetchHomeSections();
@@ -212,6 +216,16 @@ class HomeController extends GetxController {
       selectedTabIndex.value = 2;
     } else if (toolId == 'age_calc') {
       Get.toNamed(AppRoutes.ageCalculator);
+    } else if (toolId == 'anniversary') {
+      Get.to(() => const AnniversaryScreen());
+    } else if (toolId == 'creations') {
+      Get.toNamed(AppRoutes.creation);
+    } else if (toolId == 'card_maker') {
+      final templatesCtrl = Get.isRegistered<TemplatesController>()
+          ? Get.find<TemplatesController>()
+          : Get.put(TemplatesController());
+      templatesCtrl.onTypeChanged(2);
+      selectedTabIndex.value = 1;
     }
   }
 

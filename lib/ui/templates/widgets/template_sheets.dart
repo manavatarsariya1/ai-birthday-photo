@@ -12,8 +12,11 @@ import '../../../constant/app_strings.dart';
 import '../../../routes/app_routes.dart';
 import '../../../services/log_event_manager.dart';
 import '../../../theme/app_colors.dart';
+import '../../../utils/app_toast.dart';
 import '../../../utils/common_button.dart';
+import '../../../utils/common_photo_picker_sheet.dart';
 import '../../../utils/common_text.dart';
+import '../../../utils/pref_service.dart';
 import '../../camera/in_app_camera_screen.dart';
 import '../../crop/crop_screen.dart';
 import '../../generation/generation_screen.dart';
@@ -22,6 +25,11 @@ class TemplateSheets {
   TemplateSheets._();
 
   static void showTipsSheet({bool isVideo = false}) {
+    if (PrefService.getBool(PrefService.hasSeenTipsSheet)) {
+      showUploadPhotoSheet(isVideo: isVideo);
+      return;
+    }
+    PrefService.setValue(PrefService.hasSeenTipsSheet, true);
     LogEventManager.logEvent('tips_sheet_view');
     Get.bottomSheet(
       _TipsBottomSheet(isVideo: isVideo),
@@ -39,14 +47,14 @@ class TemplateSheets {
     );
   }
 
-  static void showImageSourceSheet({
+  static Future<void> showImageSourceSheet({
     required ValueChanged<File> onImagePicked,
-  }) {
+  }) async {
     LogEventManager.logEvent('image_source_sheet_view');
-    Get.bottomSheet(
-      _ImageSourceBottomSheet(onImagePicked: onImagePicked),
-      backgroundColor: AppColors.transparentColor,
-    );
+    final path = await CommonPhotoPickerSheet.show();
+    if (path != null && path.isNotEmpty) {
+      onImagePicked(File(path));
+    }
   }
 }
 
@@ -494,14 +502,18 @@ class _UploadPhotoBottomSheetState extends State<_UploadPhotoBottomSheet> {
           // Upgrade to PRO Banner
           GestureDetector(
             onTap: () {
-              Get.back();
               Get.toNamed(AppRoutes.paywall);
             },
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+              height: 50.h,
+              padding: EdgeInsets.symmetric(horizontal: 14.w),
               decoration: BoxDecoration(
-                color: AppColors.backgroundColor,
-                borderRadius: BorderRadius.circular(14.r),
+                color: AppColors.photoPickerBg,
+                borderRadius: BorderRadius.circular(9999.r),
+                border: Border.all(
+                  color: AppColors.photoPickerBorder,
+                  width: 1.r,
+                ),
               ),
               child: Row(
                 children: [
@@ -524,6 +536,7 @@ class _UploadPhotoBottomSheetState extends State<_UploadPhotoBottomSheet> {
                   SizedBox(width: 10.w),
                   Expanded(
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
@@ -541,16 +554,14 @@ class _UploadPhotoBottomSheetState extends State<_UploadPhotoBottomSheet> {
                                 vertical: 2.h,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.primaryOrange.withValues(
-                                  alpha: 0.2,
-                                ),
-                                borderRadius: BorderRadius.circular(8.r),
+                                color: const Color(0xFFFFD54F),
+                                borderRadius: BorderRadius.circular(9999.r),
                               ),
                               child: CommonText.text(
                                 title: '50% OFF',
                                 fontSize: 8.5,
                                 fontWeight: FontWeight.w700,
-                                textColor: AppColors.primaryOrange,
+                                textColor: AppColors.blackColor,
                               ),
                             ),
                           ],
@@ -584,16 +595,7 @@ class _UploadPhotoBottomSheetState extends State<_UploadPhotoBottomSheet> {
                 : AppStrings.createNow,
             onTap: () {
               if (_selectedImage == null) {
-                TemplateSheets.showImageSourceSheet(
-                  onImagePicked: (file) async {
-                    final File? cropped = await Get.to<File?>(
-                      () => CropScreen(imageFile: file),
-                    );
-                    if (cropped != null && mounted) {
-                      setState(() => _selectedImage = cropped);
-                    }
-                  },
-                );
+                AppToast.showError('Please add a photo');
                 return;
               }
               LogEventManager.logEvent('upload_photo_generate_click');

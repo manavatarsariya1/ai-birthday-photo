@@ -9,9 +9,12 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugins.googlemobileads.GoogleMobileAdsPlugin
 
 class MainActivity : FlutterActivity() {
+    private var shortcutChannel: MethodChannel? = null
+    private var pendingShortcut: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        pendingShortcut = intent?.getStringExtra("shortcut_type")
         if (!isTaskRoot && intent?.hasCategory(Intent.CATEGORY_LAUNCHER) == true && Intent.ACTION_MAIN == intent?.action) {
             finish()
             return
@@ -20,8 +23,30 @@ class MainActivity : FlutterActivity() {
         GoogleAdsReferrerHelper.checkReferrer(this)
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        val shortcut = intent.getStringExtra("shortcut_type")
+        if (!shortcut.isNullOrEmpty()) {
+            shortcutChannel?.invokeMethod("onShortcutTapped", shortcut)
+        }
+    }
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        shortcutChannel = MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            "com.aibirthdayphoto/shortcuts"
+        )
+        shortcutChannel?.setMethodCallHandler { call, result ->
+            if (call.method == "getInitialShortcut") {
+                result.success(pendingShortcut)
+                pendingShortcut = null
+            } else {
+                result.notImplemented()
+            }
+        }
 
         val pkgName = context.packageName
 

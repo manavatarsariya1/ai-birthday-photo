@@ -73,8 +73,14 @@ class _CommonAutoPlayVideoState extends State<CommonAutoPlayVideo> {
   }
 
   void _disposeController() {
-    _controller?.dispose();
+    final controller = _controller;
     _controller = null;
+    if (controller != null) {
+      controller.pause();
+      Future.delayed(const Duration(milliseconds: 50), () {
+        controller.dispose();
+      });
+    }
   }
 
   @override

@@ -104,8 +104,6 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - assets/coin.webp
-    - assets/sample.webp
     - assets/images/
     - assets/images/sample/
     - assets/images/templates/
@@ -114,9 +112,10 @@ flutter:
     - assets/images/onboarding/
     - assets/images/paywall/
     - assets/images/reminder/
+    - assets/images/setting/
     - assets/icons/
     - assets/animations/
-    - assets/special splash/
+    - assets/images/special splash/
     - remote_config_jsons/
 
   fonts:

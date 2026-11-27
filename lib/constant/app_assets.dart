@@ -4,23 +4,23 @@ class AppAssets {
   static const String imgExit = 'assets/images/img_exit.png';
 
   // ── Splash Screen Assets ──────────────────────────────────
-  static const String splashPhoto1 = 'assets/special splash/1.webp';
-  static const String splashPhoto2 = 'assets/special splash/2.webp';
-  static const String splashPhoto3 = 'assets/special splash/3.webp';
-  static const String splashBalloon = 'assets/special splash/balloon.webp';
-  static const String splashCap = 'assets/special splash/cap.webp';
+  static const String splashPhoto1 = 'assets/images/special splash/1.webp';
+  static const String splashPhoto2 = 'assets/images/special splash/2.webp';
+  static const String splashPhoto3 = 'assets/images/special splash/3.webp';
+  static const String splashBalloon = 'assets/images/special splash/balloon.webp';
+  static const String splashCap = 'assets/images/special splash/cap.webp';
   static const String splashGiftBox =
-      'assets/special splash/Lavender Gift Box with Gold Bow 1.webp';
+      'assets/images/special splash/Lavender Gift Box with Gold Bow 1.webp';
   static const String splashNameAbove =
-      "assets/special splash/name's above.webp";
+      "assets/images/special splash/name's above.webp";
   static const String splashNamesBottom =
-      'assets/special splash/names bottom.webp';
+      'assets/images/special splash/names bottom.webp';
   static const String splashRibbonRight =
-      'assets/special splash/first right side.webp';
+      'assets/images/special splash/first right side.webp';
   static const String splashRibbonLeft =
-      'assets/special splash/second left side.webp';
+      'assets/images/special splash/second left side.webp';
   static const String splashConfettiBottom =
-      'assets/special splash/third bottom.webp';
+      'assets/images/special splash/third bottom.webp';
 
   // ── Onboarding Assets ─────────────────────────────────────
   static const String onboarding1 = 'assets/images/onboarding/on_1.webp';
@@ -38,8 +38,8 @@ class AppAssets {
       'assets/images/paywall/paywall carousal 4.webp';
 
   // ── Home Screen Assets ────────────────────────────────────
-  static const String coin = 'assets/coin.webp';
-  static const String sampleTemplate = 'assets/sample.webp';
+  static const String coin = 'assets/images/coin.webp';
+  static const String sampleTemplate = 'assets/images/sample.webp';
   static const String samplePhoto = 'assets/images/sample/photo.webp';
   static const String sampleVideo = 'assets/images/sample/video.webp';
   static const String templatesSample =
@@ -78,6 +78,11 @@ class AppAssets {
   static const String icOfferMeta = 'assets/icons/Offer Meta.svg';
   static const String icOfferVideos = 'assets/icons/Offer Videos.svg';
   static const String icOfferTemplates = 'assets/icons/Offer Templates.svg';
+  static const String icRegenerate = 'assets/icons/regenerate.svg';
+  static const String icReport = 'assets/icons/report.svg';
+  static const String icHome = 'assets/icons/home.svg';
   static const String imgNoReminders = 'assets/images/reminder/no reminder.webp';
+  static const String imgNoCreation = 'assets/images/setting/no creation.webp';
+  static const String imgThankYou = 'assets/images/img_thank_you.webp';
   static const String icOfferWatermark = 'assets/icons/Offer Watermark.svg';
 }

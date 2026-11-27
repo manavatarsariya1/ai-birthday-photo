@@ -13,16 +13,20 @@ import '../../theme/app_colors.dart';
 import '../../utils/common_button.dart';
 import '../../utils/common_text.dart';
 import '../../utils/common_unlock_dialog.dart';
+import '../../utils/share_helper.dart';
+import 'report_problem_screen.dart';
 import 'result_preview_screen.dart';
 
 class ResultScreen extends StatefulWidget {
   final File beforeImage;
   final bool isVideo;
+  final bool isAnniversary;
 
   const ResultScreen({
     super.key,
     required this.beforeImage,
     this.isVideo = false,
+    this.isAnniversary = false,
   });
 
   @override
@@ -68,24 +72,32 @@ class _ResultScreenState extends State<ResultScreen> {
                         ),
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () => Get.toNamed(AppRoutes.paywall),
-                      child: Container(
-                        width: 30.r,
-                        height: 30.r,
-                        decoration: const BoxDecoration(
-                          color: AppColors.backgroundColor,
-                          shape: BoxShape.circle,
-                        ),
-                        padding: EdgeInsets.all(6.r),
-                        child: SvgPicture.asset(
-                          AppAssets.icPremiumCrown,
-                          colorFilter: const ColorFilter.mode(
-                            AppColors.primaryPink,
-                            BlendMode.srcIn,
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () => Get.to(() => const ReportProblemScreen()),
+                          child: Padding(
+                            padding: EdgeInsets.all(6.r),
+                            child: SvgPicture.asset(
+                              AppAssets.icReport,
+                              width: 19.r,
+                              height: 19.r,
+                            ),
                           ),
                         ),
-                      ),
+                        SizedBox(width: 6.w),
+                        GestureDetector(
+                          onTap: () => Get.offAllNamed(AppRoutes.home),
+                          child: Padding(
+                            padding: EdgeInsets.all(6.r),
+                            child: SvgPicture.asset(
+                              AppAssets.icHome,
+                              width: 19.r,
+                              height: 19.r,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -313,6 +325,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     Expanded(
                       child: _SecondaryActionBtn(
                         icon: Icons.auto_awesome,
+                        svgPath: AppAssets.icRegenerate,
                         title: 'Regenerate',
                         onTap: () =>
                             LogEventManager.logEvent('result_regenerate_click'),
@@ -323,8 +336,12 @@ class _ResultScreenState extends State<ResultScreen> {
                       child: _SecondaryActionBtn(
                         icon: Icons.ios_share,
                         title: 'Share',
-                        onTap: () =>
-                            LogEventManager.logEvent('result_share_click'),
+                        onTap: () {
+                          LogEventManager.logEvent('result_share_click');
+                          ShareHelper.shareText(
+                            'Check out my creation made with AI Birthday!',
+                          );
+                        },
                       ),
                     ),
                   ],
@@ -459,11 +476,13 @@ class _ToggleChip extends StatelessWidget {
 
 class _SecondaryActionBtn extends StatelessWidget {
   final IconData icon;
+  final String? svgPath;
   final String title;
   final VoidCallback onTap;
 
   const _SecondaryActionBtn({
     required this.icon,
+    this.svgPath,
     required this.title,
     required this.onTap,
   });
@@ -485,7 +504,14 @@ class _SecondaryActionBtn extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 17.r, color: AppColors.blackColor),
+            if (svgPath != null)
+              SvgPicture.asset(
+                svgPath!,
+                width: 17.r,
+                height: 17.r,
+              )
+            else
+              Icon(icon, size: 17.r, color: AppColors.blackColor),
             SizedBox(width: 6.w),
             CommonText.text(
               title: title,

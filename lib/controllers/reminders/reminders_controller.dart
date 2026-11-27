@@ -9,7 +9,7 @@ import '../../services/log_event_manager.dart';
 import '../../theme/app_colors.dart';
 import '../../ui/camera/in_app_camera_screen.dart';
 import '../../utils/app_toast.dart';
-import '../../utils/common_text.dart';
+import '../../utils/common_photo_picker_sheet.dart';
 
 class RemindersController extends GetxController {
   final RxList<ReminderModel> reminders = <ReminderModel>[].obs;
@@ -173,120 +173,10 @@ class RemindersController extends GetxController {
   }
 
   Future<void> pickPhoto() async {
-    await Get.bottomSheet(
-      Container(
-        decoration: BoxDecoration(
-          color: AppColors.whiteColor,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-        ),
-        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 28.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 36.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: AppColors.blackColor.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-            SizedBox(height: 16.h),
-            CommonText.text(
-              title: 'Select Photo',
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              textColor: AppColors.blackColor,
-            ),
-            SizedBox(height: 18.h),
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      Get.back();
-                      _pickFromInAppCamera();
-                    },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 16.h),
-                      decoration: BoxDecoration(
-                        color: AppColors.captionCardBg,
-                        borderRadius: BorderRadius.circular(16.r),
-                      ),
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 44.r,
-                            height: 44.r,
-                            decoration: const BoxDecoration(
-                              gradient: AppColors.primaryGradient,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.camera_alt_outlined,
-                              size: 22.r,
-                              color: AppColors.whiteColor,
-                            ),
-                          ),
-                          SizedBox(height: 8.h),
-                          CommonText.text(
-                            title: 'Camera',
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w600,
-                            textColor: AppColors.blackColor,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      Get.back();
-                      _pickFromSource(ImageSource.gallery);
-                    },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 16.h),
-                      decoration: BoxDecoration(
-                        color: AppColors.captionCardBg,
-                        borderRadius: BorderRadius.circular(16.r),
-                      ),
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 44.r,
-                            height: 44.r,
-                            decoration: const BoxDecoration(
-                              gradient: AppColors.primaryGradient,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.photo_library_outlined,
-                              size: 22.r,
-                              color: AppColors.whiteColor,
-                            ),
-                          ),
-                          SizedBox(height: 8.h),
-                          CommonText.text(
-                            title: 'Gallery',
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w600,
-                            textColor: AppColors.blackColor,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-      backgroundColor: AppColors.transparentColor,
-    );
+    final path = await CommonPhotoPickerSheet.show();
+    if (path != null && path.isNotEmpty) {
+      selectedPhotoPath.value = path;
+    }
   }
 
   Future<void> _pickFromInAppCamera() async {

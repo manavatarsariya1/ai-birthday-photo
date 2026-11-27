@@ -12,7 +12,9 @@ import '../../data/models/guest_login_model.dart';
 import '../../routes/app_routes.dart';
 import '../../services/api_service.dart';
 import '../../services/log_event_manager.dart';
+import '../../services/shortcut_service.dart';
 import '../../utils/pref_service.dart';
+import '../home/home_controller.dart';
 
 class SplashController extends GetxController {
   final RxDouble progress = 0.0.obs;
@@ -40,7 +42,18 @@ class SplashController extends GetxController {
     } else if (!isIntroDone) {
       Get.offAllNamed(AppRoutes.onboarding);
     } else {
-      Get.offAllNamed(AppRoutes.home);
+      final shortcut = await ShortcutService.getInitialShortcut();
+      if (shortcut == 'uninstall_app') {
+        Get.offAllNamed(AppRoutes.uninstallRetention);
+      } else {
+        Get.offAllNamed(AppRoutes.home);
+        if (shortcut == 'templates' && Get.isRegistered<HomeController>()) {
+          Get.find<HomeController>().selectedTabIndex.value = 1;
+        } else if (shortcut == 'reminders' &&
+            Get.isRegistered<HomeController>()) {
+          Get.find<HomeController>().selectedTabIndex.value = 2;
+        }
+      }
     }
   }
 

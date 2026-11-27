@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import '../../constant/app_constant.dart';
 import '../../constant/app_strings.dart';
 import '../../data/models/templates_api_model.dart';
+import '../../routes/app_routes.dart';
 import '../../services/api_service.dart';
 import '../../services/log_event_manager.dart';
 import '../../ui/templates/widgets/template_sheets.dart';
@@ -116,6 +117,13 @@ class TemplatesController extends GetxController {
         'category': categories[selectedCategoryIndex.value],
       },
     );
+    if (selectedTypeIndex.value == 2) {
+      final items = currentTemplates;
+      final imageUrl =
+          (items.isNotEmpty && index < items.length) ? items[index].image : '';
+      Get.toNamed(AppRoutes.addCardDetails, arguments: imageUrl);
+      return;
+    }
     TemplateSheets.showTipsSheet(isVideo: isVideoMode);
   }
 }

@@ -130,86 +130,172 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.blackColor,
+      backgroundColor: const Color(0xFF141118),
       body: SafeArea(
-        child: Stack(
-          fit: StackFit.expand,
+        child: Column(
           children: [
-            // Camera Preview
-            if (_isInitializing)
-              const Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.primaryPink,
-                ),
-              )
-            else if (_errorMessage != null)
-              Center(
-                child: CommonText.text(
-                  title: _errorMessage!,
-                  fontSize: 14,
-                  textColor: AppColors.whiteColor,
-                ),
-              )
-            else if (_controller != null && _controller!.value.isInitialized)
-              Center(
-                child: CameraPreview(_controller!),
-              ),
-
-            // Top Controls (Close, Flash, Switch)
-            Positioned(
-              top: 12.h,
-              left: 16.w,
-              right: 16.w,
+            // ── Top Bar ───────────────────────────────────────────────
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _CircleActionButton(
-                    icon: Icons.close,
+                  GestureDetector(
                     onTap: () => Get.back(),
+                    child: Padding(
+                      padding: EdgeInsets.all(6.r),
+                      child: Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 20.r,
+                        color: AppColors.whiteColor,
+                      ),
+                    ),
                   ),
                   Row(
                     children: [
+                      if (_cameras.length > 1) ...[
+                        _CircleActionButton(
+                          icon: Icons.cameraswitch_outlined,
+                          onTap: _switchCamera,
+                        ),
+                        SizedBox(width: 10.w),
+                      ],
                       _CircleActionButton(
                         icon: _flashMode == FlashMode.off
                             ? Icons.flash_off
                             : Icons.flash_on,
                         onTap: _toggleFlash,
                       ),
-                      if (_cameras.length > 1) ...[
-                        SizedBox(width: 10.w),
-                        _CircleActionButton(
-                          icon: Icons.cameraswitch_outlined,
-                          onTap: _switchCamera,
-                        ),
-                      ],
                     ],
                   ),
                 ],
               ),
             ),
 
-            // Bottom Shutter Button
-            Positioned(
-              bottom: 32.h,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: GestureDetector(
-                  onTap: _capturePhoto,
-                  child: Container(
-                    width: 72.r,
-                    height: 72.r,
-                    padding: EdgeInsets.all(4.r),
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: AppColors.primaryGradient,
+            // ── Rounded Camera Preview Frame ──────────────────────────
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24.r),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      if (_isInitializing)
+                        Container(
+                          color: const Color(0xFF221E28),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primaryPink,
+                            ),
+                          ),
+                        )
+                      else if (_errorMessage != null)
+                        Container(
+                          color: const Color(0xFF221E28),
+                          child: Center(
+                            child: CommonText.text(
+                              title: _errorMessage!,
+                              fontSize: 14,
+                              textColor: AppColors.whiteColor,
+                            ),
+                          ),
+                        )
+                      else if (_controller != null &&
+                          _controller!.value.isInitialized)
+                        FittedBox(
+                          fit: BoxFit.cover,
+                          child: SizedBox(
+                            width: _controller!.value.previewSize?.height ?? 1,
+                            height: _controller!.value.previewSize?.width ?? 1,
+                            child: CameraPreview(_controller!),
+                          ),
+                        ),
+
+                      // Corner Brackets
+                      Positioned.fill(
+                        child: Padding(
+                          padding: EdgeInsets.all(18.r),
+                          child: CustomPaint(
+                            painter: _CornerBracketsPainter(),
+                          ),
+                        ),
+                      ),
+
+                      // Top Tip Pill
+                      Positioned(
+                        top: 16.h,
+                        left: 0,
+                        right: 0,
+                        child: Center(
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 12.w,
+                              vertical: 6.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.blackColor.withValues(alpha: 0.55),
+                              borderRadius: BorderRadius.circular(9999.r),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.lightbulb_outline_rounded,
+                                  size: 14.r,
+                                  color: const Color(0xFFFFD54F),
+                                ),
+                                SizedBox(width: 6.w),
+                                CommonText.text(
+                                  title:
+                                      'Use a clear, well-lit photo for best results',
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  textColor: AppColors.whiteColor,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // ── Bottom Gradient Shutter Button ────────────────────────
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 24.h),
+              child: GestureDetector(
+                onTap: _capturePhoto,
+                child: Container(
+                  width: 72.r,
+                  height: 72.r,
+                  padding: EdgeInsets.all(4.r),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.whiteColor,
+                      width: 3.r,
                     ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: _isCapturing
-                            ? AppColors.whiteColor.withValues(alpha: 0.6)
-                            : AppColors.whiteColor,
-                        shape: BoxShape.circle,
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: _isCapturing ? null : AppColors.primaryGradient,
+                      color: _isCapturing
+                          ? AppColors.primaryPink.withValues(alpha: 0.6)
+                          : null,
+                    ),
+                    child: Center(
+                      child: Container(
+                        width: 18.r,
+                        height: 18.r,
+                        decoration: BoxDecoration(
+                          color: AppColors.whiteColor.withValues(alpha: 0.45),
+                          shape: BoxShape.circle,
+                        ),
                       ),
                     ),
                   ),
@@ -221,6 +307,51 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
       ),
     );
   }
+}
+
+class _CornerBracketsPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.9)
+      ..strokeWidth = 2.2
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    const len = 22.0;
+
+    canvas.drawPath(
+      Path()
+        ..moveTo(0, len)
+        ..lineTo(0, 0)
+        ..lineTo(len, 0),
+      paint,
+    );
+    canvas.drawPath(
+      Path()
+        ..moveTo(size.width - len, 0)
+        ..lineTo(size.width, 0)
+        ..lineTo(size.width, len),
+      paint,
+    );
+    canvas.drawPath(
+      Path()
+        ..moveTo(0, size.height - len)
+        ..lineTo(0, size.height)
+        ..lineTo(len, size.height),
+      paint,
+    );
+    canvas.drawPath(
+      Path()
+        ..moveTo(size.width - len, size.height)
+        ..lineTo(size.width, size.height)
+        ..lineTo(size.width, size.height - len),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _CircleActionButton extends StatelessWidget {

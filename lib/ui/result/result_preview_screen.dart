@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../constant/app_assets.dart';
 import '../../constant/app_strings.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_colors.dart';
+import '../../utils/common_button.dart';
+import '../../utils/common_svg_image.dart';
 import '../../utils/common_text.dart';
+import '../../utils/share_helper.dart';
 
 class ResultPreviewScreen extends StatelessWidget {
   final bool showWatermark;
@@ -44,32 +48,16 @@ class ResultPreviewScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () => Get.offAllNamed(AppRoutes.home),
-                        child: Padding(
-                          padding: EdgeInsets.all(6.r),
-                          child: Icon(
-                            Icons.home_outlined,
-                            size: 22.r,
-                            color: AppColors.blackColor,
-                          ),
-                        ),
+                  GestureDetector(
+                    onTap: () => Get.offAllNamed(AppRoutes.home),
+                    child: Padding(
+                      padding: EdgeInsets.all(6.r),
+                      child: CommonSvgImage(
+                        imagePath: AppAssets.icHome,
+                        width: 19.r,
+                        height: 19.r,
                       ),
-                      SizedBox(width: 6.w),
-                      GestureDetector(
-                        onTap: () => Get.back(),
-                        child: Padding(
-                          padding: EdgeInsets.all(6.r),
-                          child: Icon(
-                            Icons.delete_outline,
-                            size: 22.r,
-                            color: AppColors.blackColor,
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
@@ -83,10 +71,7 @@ class ResultPreviewScreen extends StatelessWidget {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      Image.asset(
-                        AppAssets.templatesSample,
-                        fit: BoxFit.cover,
-                      ),
+                      Image.asset(AppAssets.templatesSample, fit: BoxFit.cover),
                       if (showWatermark)
                         Positioned(
                           right: 6.w,
@@ -110,8 +95,9 @@ class ResultPreviewScreen extends StatelessWidget {
                                       vertical: 6.h,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: AppColors.blackColor
-                                          .withValues(alpha: 0.45),
+                                      color: AppColors.blackColor.withValues(
+                                        alpha: 0.45,
+                                      ),
                                       borderRadius: BorderRadius.circular(8.r),
                                     ),
                                     child: CommonText.text(
@@ -148,6 +134,13 @@ class ResultPreviewScreen extends StatelessWidget {
                 ),
               ),
 
+              SizedBox(height: 16.h),
+              CommonButton.primary(
+                onTap: () => ShareHelper.shareText(
+                  'Check out my creation made with AI Birthday!',
+                ),
+                title: 'Share',
+              ),
               SizedBox(height: 20.h),
             ],
           ),
