@@ -28,6 +28,9 @@ class GenerationScreen extends StatefulWidget {
   final File? imageFile2;
   final bool isVideo;
   final TemplateItemModel? template;
+  final String customEndpoint;
+  final String imageFieldName;
+  final Map<String, String>? extraFields;
 
   const GenerationScreen({
     super.key,
@@ -35,6 +38,9 @@ class GenerationScreen extends StatefulWidget {
     this.imageFile2,
     this.isVideo = false,
     this.template,
+    this.customEndpoint = 'generations/generate',
+    this.imageFieldName = 'image_1',
+    this.extraFields,
   });
 
   @override
@@ -90,14 +96,20 @@ class _GenerationScreenState extends State<GenerationScreen> {
       }
 
       final files = <http.MultipartFile>[
-        await http.MultipartFile.fromPath('image_1', widget.imageFile.path),
+        await http.MultipartFile.fromPath(
+          widget.imageFieldName,
+          widget.imageFile.path,
+        ),
         if (widget.imageFile2 != null)
           await http.MultipartFile.fromPath('image_2', widget.imageFile2!.path),
       ];
 
       final response = await ApiService.multipartPost(
-        url: '${baseUrl}generations/generate',
-        fields: {'prompt_id': widget.template?.id ?? ''},
+        url: '$baseUrl${widget.customEndpoint}',
+        fields: {
+          'prompt_id': widget.template?.id ?? '',
+          if (widget.extraFields != null) ...widget.extraFields!,
+        },
         files: files,
         headers: {
           'Idempotency-Key': _idempotencyKey,
@@ -269,11 +281,14 @@ class _GenerationScreenState extends State<GenerationScreen> {
                     AppColors.primaryGradient.createShader(
                   Rect.fromLTWH(0, 0, bounds.width, bounds.height),
                 ),
-                child: CommonText.text(
-                  title: '$_percent%',
-                  fontSize: 44,
-                  fontWeight: FontWeight.w800,
-                  textColor: AppColors.whiteColor,
+                child: Padding(
+                  padding: EdgeInsets.only(top: 6.h),
+                  child: CommonText.text(
+                    title: '$_percent%',
+                    fontSize: 44,
+                    fontWeight: FontWeight.w800,
+                    textColor: AppColors.whiteColor,
+                  ),
                 ),
               ),
 

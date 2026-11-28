@@ -233,22 +233,46 @@ class HomeScreen extends StatelessWidget {
               SizedBox(height: 20.h),
 
               // ── Trending Templates (Full Width Edge-to-Edge) ──
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
+              Obx(() {
+                if (!controller.isLoadingHomeSections.value &&
+                    controller.dynamicTrendingTemplates.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Obx(() => CommonText.text(
-                          title: (controller
-                                      .trendingSectionTitle.value.isNotEmpty
-                                  ? controller.trendingSectionTitle.value
-                                  : AppStrings.trendingTemplates)
-                              .toUpperCase(),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.8,
-                          textColor: AppColors.blackColor,
-                        )),
+                    Obx(() {
+                      if (controller.isLoadingHomeSections.value &&
+                          controller.trendingSectionTitle.value.isEmpty) {
+                        return Shimmer.fromColors(
+                          baseColor: const Color(0xFFD6D6E0),
+                          highlightColor: const Color(0xFFF5F5FA),
+                          child: Container(
+                            width: 140.w,
+                            height: 14.h,
+                            decoration: BoxDecoration(
+                              color: AppColors.whiteColor,
+                              borderRadius: BorderRadius.circular(6.r),
+                            ),
+                          ),
+                        );
+                      }
+                      return CommonText.text(
+                        title: (controller.trendingSectionTitle.value.isNotEmpty
+                                ? controller.trendingSectionTitle.value
+                                : AppStrings.trendingTemplates)
+                            .toUpperCase(),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8,
+                        textColor: AppColors.blackColor,
+                      );
+                    }),
                     GestureDetector(
                       onTap: controller.onViewAllTemplatesTap,
                       child: CommonText.text(
@@ -304,6 +328,9 @@ class HomeScreen extends StatelessWidget {
               ),
 
               SizedBox(height: 20.h),
+                  ],
+                );
+              }),
 
               // ── Upcoming Birthdays ────────────────────────────
               Padding(
@@ -346,15 +373,26 @@ class HomeScreen extends StatelessWidget {
                     Obx(() {
                       final items = controller.upcomingBirthdays;
                       if (items.isEmpty) {
-                        return Padding(
-                          padding: EdgeInsets.symmetric(vertical: 12.h),
+                        return Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.symmetric(
+                            vertical: 16.h,
+                            horizontal: 16.w,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.whiteColor.withValues(alpha: 0.75),
+                            borderRadius: BorderRadius.circular(14.r),
+                            border: Border.all(
+                              color: AppColors.borderColor.withValues(alpha: 0.5),
+                            ),
+                          ),
                           child: Center(
                             child: CommonText.text(
                               title: 'No upcoming birthdays this month',
                               fontSize: 12.5,
                               fontWeight: FontWeight.w400,
                               textColor:
-                                  AppColors.blackColor.withValues(alpha: 0.45),
+                                  AppColors.blackColor.withValues(alpha: 0.5),
                             ),
                           ),
                         );

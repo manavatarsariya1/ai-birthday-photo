@@ -219,6 +219,8 @@ class _ResultScreenState extends State<ResultScreen> {
                               icon: _reaction == 'like'
                                   ? Icons.thumb_up_alt
                                   : Icons.thumb_up_alt_outlined,
+                              isSelected: _reaction == 'like',
+                              isDisabled: _reaction != null,
                               onTap: _reaction == null
                                   ? () => _submitReaction('like')
                                   : () {},
@@ -228,6 +230,8 @@ class _ResultScreenState extends State<ResultScreen> {
                               icon: _reaction == 'dislike'
                                   ? Icons.thumb_down_alt
                                   : Icons.thumb_down_alt_outlined,
+                              isSelected: _reaction == 'dislike',
+                              isDisabled: _reaction != null,
                               onTap: _reaction == null
                                   ? () => _submitReaction('dislike')
                                   : () {},
@@ -467,21 +471,33 @@ class _ResultScreenState extends State<ResultScreen> {
 class _OverlayCircleBtn extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
+  final bool isSelected;
+  final bool isDisabled;
 
-  const _OverlayCircleBtn({required this.icon, required this.onTap});
+  const _OverlayCircleBtn({
+    required this.icon,
+    required this.onTap,
+    this.isSelected = false,
+    this.isDisabled = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: 30.r,
-        height: 30.r,
-        decoration: BoxDecoration(
-          color: AppColors.blackColor.withValues(alpha: 0.45),
-          shape: BoxShape.circle,
+      child: Opacity(
+        opacity: isDisabled ? 0.8 : 1.0,
+        child: Container(
+          width: 30.r,
+          height: 30.r,
+          decoration: BoxDecoration(
+            gradient: isSelected ? AppColors.primaryGradient : null,
+            color:
+                isSelected ? null : AppColors.blackColor.withValues(alpha: 0.45),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, size: 16.r, color: AppColors.whiteColor),
         ),
-        child: Icon(icon, size: 16.r, color: AppColors.whiteColor),
       ),
     );
   }

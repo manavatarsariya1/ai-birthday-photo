@@ -18,7 +18,10 @@ class AddCardDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(CardCreationController());
-    final argUrl = Get.arguments as String?;
+    final args = Get.arguments;
+    final argUrl = args is Map
+        ? args['imageUrl']?.toString()
+        : args as String?;
     if (argUrl != null && argUrl.isNotEmpty) {
       controller.templateImageUrl.value = argUrl;
     }
@@ -161,11 +164,17 @@ class AddCardDetailsScreen extends StatelessWidget {
                             ),
                             child: TextField(
                               controller: controller.nameController,
+                              focusNode: controller.nameFocusNode,
                               inputFormatters: [
                                 FilteringTextInputFormatter.deny(
                                   RegExp(r'^\s+'),
                                 ),
                               ],
+                              onChanged: (_) {
+                                if (controller.nameErrorText.value.isNotEmpty) {
+                                  controller.nameErrorText.value = '';
+                                }
+                              },
                               style: TextStyle(
                                 fontSize: 14.sp,
                                 fontWeight: FontWeight.w500,
@@ -194,6 +203,30 @@ class AddCardDetailsScreen extends StatelessWidget {
                               ),
                             ),
                           ),
+                          Obx(() {
+                            if (controller.nameErrorText.value.isEmpty) {
+                              return const SizedBox.shrink();
+                            }
+                            return Padding(
+                              padding: EdgeInsets.only(top: 6.h),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.error_outline,
+                                    size: 14.r,
+                                    color: AppColors.errorColor,
+                                  ),
+                                  SizedBox(width: 4.w),
+                                  CommonText.text(
+                                    title: controller.nameErrorText.value,
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w500,
+                                    textColor: AppColors.errorColor,
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
                           SizedBox(height: 16.h),
                           CommonText.text(
                             title: 'Celebration Date',
@@ -270,12 +303,19 @@ class AddCardDetailsScreen extends StatelessWidget {
                             ),
                             child: TextField(
                               controller: controller.venueController,
+                              focusNode: controller.venueFocusNode,
                               maxLines: 3,
                               inputFormatters: [
                                 FilteringTextInputFormatter.deny(
                                   RegExp(r'^\s+'),
                                 ),
                               ],
+                              onChanged: (_) {
+                                if (controller
+                                    .venueErrorText.value.isNotEmpty) {
+                                  controller.venueErrorText.value = '';
+                                }
+                              },
                               style: TextStyle(
                                 fontSize: 13.5.sp,
                                 fontWeight: FontWeight.w500,
@@ -295,6 +335,30 @@ class AddCardDetailsScreen extends StatelessWidget {
                               ),
                             ),
                           ),
+                          Obx(() {
+                            if (controller.venueErrorText.value.isEmpty) {
+                              return const SizedBox.shrink();
+                            }
+                            return Padding(
+                              padding: EdgeInsets.only(top: 6.h),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.error_outline,
+                                    size: 14.r,
+                                    color: AppColors.errorColor,
+                                  ),
+                                  SizedBox(width: 4.w),
+                                  CommonText.text(
+                                    title: controller.venueErrorText.value,
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w500,
+                                    textColor: AppColors.errorColor,
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
                         ],
                       ),
                     ),

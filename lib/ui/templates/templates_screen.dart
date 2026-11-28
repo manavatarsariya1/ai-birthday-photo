@@ -138,18 +138,39 @@ class TemplatesScreen extends StatelessWidget {
                   ),
                 );
               }
-              return ListView.separated(
+              return SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 physics: const ClampingScrollPhysics(),
-                itemCount: cats.length,
-                separatorBuilder: (_, __) => SizedBox(width: 8.w),
-                itemBuilder: (context, index) {
-                  return Obx(() {
-                    final isActive =
-                        controller.selectedCategoryIndex.value == index;
-                    return GestureDetector(
-                      onTap: () => controller.onCategoryChanged(index),
+                child: Row(
+                  children: List.generate(cats.length, (index) {
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        right: index < cats.length - 1 ? 8.w : 0,
+                      ),
+                      child: Builder(
+                        builder: (pillContext) {
+                          return Obx(() {
+                            final isActive =
+                                controller.selectedCategoryIndex.value == index;
+                            return GestureDetector(
+                              onTap: () {
+                                controller.onCategoryChanged(index);
+                                WidgetsBinding.instance.addPostFrameCallback((
+                                  _,
+                                ) {
+                                  if (pillContext.mounted) {
+                                    Scrollable.ensureVisible(
+                                      pillContext,
+                                      alignment: 0.5,
+                                      duration: const Duration(
+                                        milliseconds: 280,
+                                      ),
+                                      curve: Curves.easeOut,
+                                    );
+                                  }
+                                });
+                              },
                       child: Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: 20.w,
@@ -178,7 +199,11 @@ class TemplatesScreen extends StatelessWidget {
                       ),
                     );
                   });
-                },
+                        },
+                      ),
+                    );
+                  }),
+                ),
               );
             }),
           ),
@@ -231,6 +256,10 @@ class TemplatesScreen extends StatelessWidget {
                 color: AppColors.primaryPink,
                 onRefresh: controller.fetchTemplates,
                 child: GridView.builder(
+                  key: ValueKey(
+                    '${controller.selectedTypeIndex.value}_${controller.selectedCategoryIndex.value}',
+                  ),
+                  cacheExtent: 1200,
                   padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
                   physics: const AlwaysScrollableScrollPhysics(
                     parent: ClampingScrollPhysics(),
@@ -271,6 +300,9 @@ class TemplatesScreen extends StatelessWidget {
                                     : CachedNetworkImage(
                                         imageUrl: imageUrl,
                                         fit: BoxFit.cover,
+                                        memCacheWidth: 500,
+                                        fadeInDuration: Duration.zero,
+                                        fadeOutDuration: Duration.zero,
                                         placeholder: (_, __) => Shimmer.fromColors(
                                           baseColor: const Color(0xFFE6E6EC),
                                           highlightColor:

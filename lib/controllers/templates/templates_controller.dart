@@ -140,7 +140,10 @@ class TemplatesController extends GetxController {
         : null;
     if (selectedTypeIndex.value == 2) {
       final imageUrl = template?.image ?? '';
-      Get.toNamed(AppRoutes.addCardDetails, arguments: imageUrl);
+      Get.toNamed(
+        AppRoutes.addCardDetails,
+        arguments: {'imageUrl': imageUrl, 'template': template},
+      );
       return;
     }
     TemplateSheets.showTipsSheet(isVideo: isVideoMode, template: template);

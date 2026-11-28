@@ -18,8 +18,10 @@ import '../../../utils/common_photo_picker_sheet.dart';
 import '../../../utils/common_text.dart';
 import '../../../utils/pref_service.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../../controllers/home/home_controller.dart';
 import '../../../data/models/templates_api_model.dart';
+import '../../../utils/common_app_sheets.dart';
 import '../../camera/in_app_camera_screen.dart';
 import '../../crop/crop_screen.dart';
 import '../../generation/generation_screen.dart';
@@ -60,6 +62,11 @@ class TemplateSheets {
     required ValueChanged<File> onImagePicked,
   }) async {
     LogEventManager.logEvent('image_source_sheet_view');
+    final photoStatus = await Permission.photos.status;
+    if (photoStatus.isPermanentlyDenied) {
+      await CommonAppSheets.showPhotoAccess();
+      return;
+    }
     final path = await CommonPhotoPickerSheet.show();
     if (path != null && path.isNotEmpty) {
       onImagePicked(File(path));

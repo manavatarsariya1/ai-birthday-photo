@@ -46,9 +46,7 @@ Future<void> main() async {
       androidProvider: kDebugMode
           ? AndroidProvider.debug
           : AndroidProvider.playIntegrity,
-      appleProvider: kDebugMode
-          ? AppleProvider.debug
-          : AppleProvider.appAttest,
+      appleProvider: kDebugMode ? AppleProvider.debug : AppleProvider.appAttest,
     );
   } catch (e) {
     if (kDebugMode) {
@@ -73,6 +71,9 @@ class MyApp extends StatelessWidget {
         return GetMaterialApp(
           title: appName,
           debugShowCheckedModeBanner: false,
+          scrollBehavior: const MaterialScrollBehavior().copyWith(
+            overscroll: false,
+          ),
           theme: AppTheme.lightTheme,
           themeMode: ThemeMode.light,
           defaultTransition: appDefaultTransition,
