@@ -1,7 +1,9 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../constant/app_assets.dart';
 import '../../constant/app_strings.dart';
@@ -80,7 +82,17 @@ class ResultPreviewScreen extends StatelessWidget {
                                   videoUrl: resultUrl!,
                                   enableTapToToggle: true,
                                 )
-                              : Image.network(resultUrl!, fit: BoxFit.cover))
+                              : CachedNetworkImage(
+                                  imageUrl: resultUrl!,
+                                  fit: BoxFit.cover,
+                                  placeholder: (_, __) => Shimmer.fromColors(
+                                    baseColor: const Color(0xFFD6D6E0),
+                                    highlightColor: const Color(0xFFF5F5FA),
+                                    child: Container(
+                                      color: AppColors.whiteColor,
+                                    ),
+                                  ),
+                                ))
                           : Image.asset(
                               AppAssets.templatesSample,
                               fit: BoxFit.cover,

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../constant/app_constant.dart';
@@ -14,6 +15,7 @@ import '../../ui/templates/widgets/template_sheets.dart';
 class TemplatesController extends GetxController {
   final RxInt selectedTypeIndex = 0.obs;
   final RxInt selectedCategoryIndex = 0.obs;
+  final ScrollController categoryScrollController = ScrollController();
   String? _pendingCategoryId;
   int _fetchRequestId = 0;
   final RxBool isLoading = false.obs;
@@ -75,6 +77,13 @@ class TemplatesController extends GetxController {
             _pendingCategoryId = null;
           } else {
             selectedCategoryIndex.value = 0;
+            if (categoryScrollController.hasClients) {
+              categoryScrollController.animateTo(
+                0,
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeOut,
+              );
+            }
           }
         }
       }

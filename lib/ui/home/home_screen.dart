@@ -526,6 +526,9 @@ class _HeroFeatureCard extends StatelessWidget {
                       : CachedNetworkImage(
                           imageUrl: imagePath,
                           fit: BoxFit.cover,
+                          memCacheWidth: 500,
+                          fadeInDuration: Duration.zero,
+                          fadeOutDuration: Duration.zero,
                           placeholder: (_, __) => Shimmer.fromColors(
                             baseColor: const Color(0xFFE6E6EC),
                             highlightColor: const Color(0xFFF7F7FA),
@@ -694,6 +697,9 @@ class _TrendingTemplateCard extends StatelessWidget {
                   ? CachedNetworkImage(
                       imageUrl: template.imagePath,
                       fit: BoxFit.cover,
+                      memCacheWidth: 500,
+                      fadeInDuration: Duration.zero,
+                      fadeOutDuration: Duration.zero,
                       placeholder: (_, __) => Shimmer.fromColors(
                         baseColor: const Color(0xFFE6E6EC),
                         highlightColor: const Color(0xFFF7F7FA),

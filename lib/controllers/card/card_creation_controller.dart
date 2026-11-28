@@ -12,7 +12,10 @@ import '../../routes/app_routes.dart';
 import '../../services/log_event_manager.dart';
 import '../../ui/generation/generation_screen.dart';
 import '../../utils/app_toast.dart';
+import '../../utils/common_app_sheets.dart';
 import '../../utils/common_photo_picker_sheet.dart';
+import '../../utils/pref_service.dart';
+import '../home/home_controller.dart';
 
 class CardCreationController extends GetxController {
   final TextEditingController nameController = TextEditingController();
@@ -112,6 +115,14 @@ class CardCreationController extends GetxController {
     }
     if (selectedPhotoPath.value.isEmpty) {
       AppToast.showError('Please add a photo');
+      return;
+    }
+    final requiredCredits = selectedTemplate?.credits ?? 1;
+    final balance = Get.isRegistered<HomeController>()
+        ? Get.find<HomeController>().coinsCount.value
+        : (PrefService.getInt(PrefService.userCredits) ?? 0);
+    if (balance < requiredCredits) {
+      CommonAppSheets.showInsufficientCredits();
       return;
     }
     LogEventManager.logEvent('card_generate_click');

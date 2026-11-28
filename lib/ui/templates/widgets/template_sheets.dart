@@ -739,6 +739,14 @@ class _UploadPhotoBottomSheetState extends State<_UploadPhotoBottomSheet> {
                   await detector.close();
                 }
               }
+              final requiredCredits = widget.template?.credits ?? 1;
+              final balance = Get.isRegistered<HomeController>()
+                  ? Get.find<HomeController>().coinsCount.value
+                  : (PrefService.getInt(PrefService.userCredits) ?? 0);
+              if (balance < requiredCredits) {
+                CommonAppSheets.showInsufficientCredits();
+                return;
+              }
               LogEventManager.logEvent('upload_photo_generate_click');
               Get.back();
               Get.to(

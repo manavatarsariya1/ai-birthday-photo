@@ -83,18 +83,40 @@ class _AnniversaryScreenState extends State<AnniversaryScreen> {
                   );
                 }
                 if (cats.isEmpty) return const SizedBox.shrink();
-                return ListView.separated(
+                return SingleChildScrollView(
+                  controller: controller.categoryScrollController,
                   scrollDirection: Axis.horizontal,
                   padding: EdgeInsets.symmetric(horizontal: 16.w),
                   physics: const ClampingScrollPhysics(),
-                  itemCount: cats.length,
-                  separatorBuilder: (_, __) => SizedBox(width: 8.w),
-                  itemBuilder: (_, i) {
-                    return Obx(() {
-                      final isActive =
-                          controller.selectedCategoryIndex.value == i;
-                      return GestureDetector(
-                        onTap: () => controller.selectedCategoryIndex.value = i,
+                  child: Row(
+                    children: List.generate(cats.length, (i) {
+                      return Padding(
+                        padding: EdgeInsets.only(
+                          right: i < cats.length - 1 ? 8.w : 0,
+                        ),
+                        child: Builder(
+                          builder: (pillContext) {
+                            return Obx(() {
+                              final isActive =
+                                  controller.selectedCategoryIndex.value == i;
+                              return GestureDetector(
+                                onTap: () {
+                                  controller.selectedCategoryIndex.value = i;
+                                  WidgetsBinding.instance.addPostFrameCallback((
+                                    _,
+                                  ) {
+                                    if (pillContext.mounted) {
+                                      Scrollable.ensureVisible(
+                                        pillContext,
+                                        alignment: 0.5,
+                                        duration: const Duration(
+                                          milliseconds: 280,
+                                        ),
+                                        curve: Curves.easeOut,
+                                      );
+                                    }
+                                  });
+                                },
                         child: Container(
                           padding: EdgeInsets.symmetric(
                             horizontal: 18.w,
@@ -125,7 +147,11 @@ class _AnniversaryScreenState extends State<AnniversaryScreen> {
                         ),
                       );
                     });
-                  },
+                          },
+                        ),
+                      );
+                    }),
+                  ),
                 );
               }),
             ),
@@ -177,6 +203,8 @@ class _AnniversaryScreenState extends State<AnniversaryScreen> {
                   color: AppColors.primaryPink,
                   onRefresh: controller.fetchAnniversaryTemplates,
                   child: GridView.builder(
+                    key: ValueKey(controller.selectedCategoryIndex.value),
+                    cacheExtent: 1200,
                     padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
                     physics: const AlwaysScrollableScrollPhysics(
                       parent: ClampingScrollPhysics(),
@@ -203,6 +231,9 @@ class _AnniversaryScreenState extends State<AnniversaryScreen> {
                               ? CachedNetworkImage(
                                   imageUrl: imageUrl,
                                   fit: BoxFit.cover,
+                                  memCacheWidth: 500,
+                                  fadeInDuration: Duration.zero,
+                                  fadeOutDuration: Duration.zero,
                                   placeholder: (_, __) => Shimmer.fromColors(
                                     baseColor: const Color(0xFFE6E6EC),
                                     highlightColor: const Color(0xFFF7F7FA),

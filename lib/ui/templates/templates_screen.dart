@@ -139,6 +139,7 @@ class TemplatesScreen extends StatelessWidget {
                 );
               }
               return SingleChildScrollView(
+                controller: controller.categoryScrollController,
                 scrollDirection: Axis.horizontal,
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 physics: const ClampingScrollPhysics(),

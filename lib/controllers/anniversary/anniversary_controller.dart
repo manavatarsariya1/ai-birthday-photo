@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../constant/app_constant.dart';
@@ -9,6 +10,7 @@ import '../../services/api_service.dart';
 
 class AnniversaryController extends GetxController {
   final RxInt selectedCategoryIndex = 0.obs;
+  final ScrollController categoryScrollController = ScrollController();
   final RxBool isLoading = false.obs;
   final RxList<TemplateCategoryModel> categories =
       <TemplateCategoryModel>[].obs;
@@ -37,6 +39,13 @@ class AnniversaryController extends GetxController {
         if (parsed.success) {
           categories.assignAll(parsed.data);
           selectedCategoryIndex.value = 0;
+          if (categoryScrollController.hasClients) {
+            categoryScrollController.animateTo(
+              0,
+              duration: const Duration(milliseconds: 280),
+              curve: Curves.easeOut,
+            );
+          }
         }
       }
     } catch (e) {

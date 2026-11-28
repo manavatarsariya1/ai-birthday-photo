@@ -20,6 +20,7 @@ import '../../services/api_service.dart';
 import '../../services/log_event_manager.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/app_toast.dart';
+import '../../utils/common_app_sheets.dart';
 import '../../utils/common_text.dart';
 import '../result/result_screen.dart';
 
@@ -137,13 +138,22 @@ class _GenerationScreenState extends State<GenerationScreen> {
       }
 
       String msg = 'Generation failed. Please try again.';
+      String errorCode = '';
       if (response != null && response.body.isNotEmpty) {
         try {
           final decoded = jsonDecode(response.body) as Map<String, dynamic>;
           if (decoded['message'] != null) {
             msg = decoded['message'].toString();
           }
+          if (decoded['error'] is Map) {
+            errorCode = decoded['error']['code']?.toString() ?? '';
+          }
         } catch (_) {}
+      }
+      if (response?.statusCode == 402 || errorCode == 'INSUFFICIENT_CREDITS') {
+        Get.back();
+        CommonAppSheets.showInsufficientCredits();
+        return;
       }
       AppToast.showError(msg);
       Get.back();
@@ -199,6 +209,8 @@ class _GenerationScreenState extends State<GenerationScreen> {
                 beforeImage: widget.imageFile,
                 imageFile2: widget.imageFile2,
                 isVideo: widget.isVideo || mediaType == 'video',
+                isCard: widget.customEndpoint == 'generations/card' ||
+                    mediaType == 'card',
                 template: widget.template,
                 resultUrl: resultUrl,
                 jobId: jobId,

@@ -22,4 +22,21 @@ class CreationItemModel {
     ];
     return '${createdAt.day} ${months[createdAt.month - 1]}';
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'path': path,
+        'type': type,
+        'createdAt': createdAt.toIso8601String(),
+      };
+
+  factory CreationItemModel.fromJson(Map<String, dynamic> json) {
+    return CreationItemModel(
+      id: json['id']?.toString() ?? '',
+      path: json['path']?.toString() ?? '',
+      type: json['type']?.toString() ?? 'photo',
+      createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? '') ??
+          DateTime.now(),
+    );
+  }
 }

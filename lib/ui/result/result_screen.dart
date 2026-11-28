@@ -1,13 +1,19 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../constant/app_assets.dart';
 import '../../constant/app_constant.dart';
 import '../../constant/app_strings.dart';
+import '../../controllers/creation/creation_controller.dart';
+import '../../controllers/home/home_controller.dart';
+import '../../controllers/templates/templates_controller.dart';
 import '../../data/models/templates_api_model.dart';
 import '../../routes/app_routes.dart';
 import '../../services/api_service.dart';
@@ -27,6 +33,7 @@ class ResultScreen extends StatefulWidget {
   final File beforeImage;
   final File? imageFile2;
   final bool isVideo;
+  final bool isCard;
   final bool isAnniversary;
   final TemplateItemModel? template;
   final String? resultUrl;
@@ -37,6 +44,7 @@ class ResultScreen extends StatefulWidget {
     required this.beforeImage,
     this.imageFile2,
     this.isVideo = false,
+    this.isCard = false,
     this.isAnniversary = false,
     this.template,
     this.resultUrl,
@@ -51,6 +59,35 @@ class _ResultScreenState extends State<ResultScreen> {
   bool _showAfter = true;
   bool _showWatermark = true;
   String? _reaction;
+  List<Map<String, dynamic>> _moreItems = [];
+  bool _isLoadingMore = true;
+
+  Future<void> _fetchMoreSubcategories() async {
+    try {
+      final subId = widget.template?.id ?? '';
+      final url = subId.isNotEmpty
+          ? '${baseUrl}subcategories/more?subcategoryId=$subId&limit=10'
+          : '${baseUrl}subcategories/more?limit=10';
+      final response = await ApiService.get(url: url);
+      if (!mounted) return;
+      if (response != null && response.statusCode == 200) {
+        final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+        if (decoded['success'] == true && decoded['data'] is List) {
+          final list = (decoded['data'] as List)
+              .map((e) => e as Map<String, dynamic>)
+              .toList();
+          setState(() {
+            _moreItems = list;
+            _isLoadingMore = false;
+          });
+          return;
+        }
+      }
+    } catch (_) {}
+    if (mounted) {
+      setState(() => _isLoadingMore = false);
+    }
+  }
 
   Future<void> _submitReaction(String reaction) async {
     if (_reaction != null) return;
@@ -72,6 +109,7 @@ class _ResultScreenState extends State<ResultScreen> {
   void initState() {
     super.initState();
     LogEventManager.logEvent('result_view');
+    _fetchMoreSubcategories();
   }
 
   @override
@@ -178,10 +216,19 @@ class _ResultScreenState extends State<ResultScreen> {
                                           videoUrl: widget.resultUrl!,
                                           enableTapToToggle: true,
                                         )
-                                      : Image.network(
-                                          widget.resultUrl!,
+                                      : CachedNetworkImage(
+                                          imageUrl: widget.resultUrl!,
                                           fit: BoxFit.cover,
                                           alignment: Alignment.topCenter,
+                                          placeholder: (_, __) =>
+                                              Shimmer.fromColors(
+                                            baseColor: const Color(0xFFD6D6E0),
+                                            highlightColor:
+                                                const Color(0xFFF5F5FA),
+                                            child: Container(
+                                              color: AppColors.whiteColor,
+                                            ),
+                                          ),
                                         ))
                                 : Image.asset(
                                     AppAssets.templatesSample,
@@ -208,8 +255,22 @@ class _ResultScreenState extends State<ResultScreen> {
                                   () => ResultPreviewScreen(
                                     resultUrl: widget.resultUrl,
                                     showWatermark: _showWatermark,
-                                    onRemoveWatermark: () =>
-                                        Get.toNamed(AppRoutes.paywall),
+                                    onRemoveWatermark: () {
+                                      CommonUnlockDialog.show(
+                                        title: 'Remove Watermark',
+                                        subtitle:
+                                            'Watch an ad to remove the watermark, or Go premium for watermark free downloads',
+                                        buttonTitle: 'Remove Watermark (Ad)',
+                                        onPrimaryTap: () {
+                                          setState(
+                                            () => _showWatermark = false,
+                                          );
+                                          Get.back();
+                                        },
+                                        onUpgradeTap: () =>
+                                            Get.toNamed(AppRoutes.paywall),
+                                      );
+                                    },
                                   ),
                                 );
                               },
@@ -350,8 +411,43 @@ class _ResultScreenState extends State<ResultScreen> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: CommonButton.primary(
-                  title: widget.isVideo ? 'Save Video' : 'Save Photo',
-                  onTap: () => LogEventManager.logEvent('result_save_click'),
+                  title: widget.isVideo
+                      ? 'Save Video'
+                      : (widget.isCard ? 'Save Card' : 'Save Photo'),
+                  onTap: () async {
+                    LogEventManager.logEvent('result_save_click');
+                    final url = widget.resultUrl ?? '';
+                    if (url.isEmpty) {
+                      AppToast.showError('Nothing to save');
+                      return;
+                    }
+                    final mediaType = widget.isVideo
+                        ? 'video'
+                        : (widget.isCard ? 'card' : 'photo');
+                    final savedItem =
+                        await CreationController.saveCreationFromUrl(
+                      url: url,
+                      type: mediaType,
+                      id: widget.jobId ?? '',
+                    );
+                    if (savedItem != null) {
+                      AppToast.showSuccess('Saved to Creations!');
+                      final creationCtrl =
+                          Get.isRegistered<CreationController>()
+                              ? Get.find<CreationController>()
+                              : Get.put(CreationController());
+                      creationCtrl.selectedTabIndex.value = mediaType == 'video'
+                          ? 1
+                          : (mediaType == 'card' ? 2 : 0);
+                      Get.offNamed(AppRoutes.creation);
+                      Get.toNamed(
+                        AppRoutes.creationPreview,
+                        arguments: savedItem,
+                      );
+                    } else {
+                      AppToast.showError('Failed to save');
+                    }
+                  },
                 ),
               ),
 
@@ -400,64 +496,99 @@ class _ResultScreenState extends State<ResultScreen> {
               SizedBox(height: 16.h),
 
               // ── More Images (Full Width Edge-to-Edge) ─────────
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: CommonText.text(
-                    title: widget.isVideo ? 'MORE VIDEOS' : 'MORE IMAGES',
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.8,
-                    textColor: AppColors.blackColor,
+              if (_isLoadingMore || _moreItems.isNotEmpty) ...[
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: CommonText.text(
+                      title: widget.isVideo ? 'MORE VIDEOS' : 'MORE IMAGES',
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.8,
+                      textColor: AppColors.blackColor,
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(height: 8.h),
+                SizedBox(height: 8.h),
 
-              SizedBox(
-                height: 112.h,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
-                  itemCount: 4,
-                  separatorBuilder: (_, __) => SizedBox(width: 10.w),
-                  itemBuilder: (context, index) {
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(12.r),
-                      child: SizedBox(
-                        width: 98.w,
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Image.asset(
-                              AppAssets.sampleTemplate,
-                              fit: BoxFit.cover,
+                SizedBox(
+                  height: 112.h,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
+                    itemCount: _isLoadingMore ? 4 : _moreItems.length,
+                    separatorBuilder: (_, __) => SizedBox(width: 10.w),
+                    itemBuilder: (context, index) {
+                      if (_isLoadingMore) {
+                        return Shimmer.fromColors(
+                          baseColor: const Color(0xFFD6D6E0),
+                          highlightColor: const Color(0xFFF5F5FA),
+                          child: Container(
+                            width: 98.w,
+                            decoration: BoxDecoration(
+                              color: AppColors.whiteColor,
+                              borderRadius: BorderRadius.circular(12.r),
                             ),
-                            if (widget.isVideo)
-                              Center(
-                                child: Container(
-                                  width: 28.r,
-                                  height: 28.r,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.blackColor
-                                        .withValues(alpha: 0.45),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    Icons.play_arrow_rounded,
-                                    size: 18.r,
-                                    color: AppColors.whiteColor,
-                                  ),
-                                ),
-                              ),
-                          ],
+                          ),
+                        );
+                      }
+                      final item = _moreItems[index];
+                      final coverUrl = item['coverImage']?.toString() ?? '';
+                      return GestureDetector(
+                        onTap: () {
+                          LogEventManager.logEvent('result_more_item_click');
+                          final catName =
+                              item['categoryName']?.toString().toLowerCase() ??
+                                  '';
+                          final type = catName.contains('video')
+                              ? 'video'
+                              : catName.contains('card')
+                                  ? 'card'
+                                  : 'photo';
+                          final id = item['id']?.toString() ?? '';
+                          final templatesCtrl =
+                              Get.isRegistered<TemplatesController>()
+                                  ? Get.find<TemplatesController>()
+                                  : Get.put(TemplatesController());
+                          templatesCtrl.selectTypeAndCategory(type, id);
+                          if (Get.isRegistered<HomeController>()) {
+                            Get.find<HomeController>().selectedTabIndex.value =
+                                1;
+                          }
+                          Get.until(
+                            (route) =>
+                                route.settings.name == AppRoutes.home ||
+                                route.isFirst,
+                          );
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12.r),
+                          child: SizedBox(
+                            width: 98.w,
+                            child: coverUrl.isNotEmpty
+                                ? CachedNetworkImage(
+                                    imageUrl: coverUrl,
+                                    fit: BoxFit.cover,
+                                    placeholder: (_, __) => Shimmer.fromColors(
+                                      baseColor: const Color(0xFFD6D6E0),
+                                      highlightColor: const Color(0xFFF5F5FA),
+                                      child: Container(
+                                        color: AppColors.whiteColor,
+                                      ),
+                                    ),
+                                    errorWidget: (_, __, ___) => Container(
+                                      color: AppColors.captionCardBg,
+                                    ),
+                                  )
+                                : Container(color: AppColors.captionCardBg),
+                          ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-              ),
+              ],
 
               SizedBox(height: 20.h),
             ],
