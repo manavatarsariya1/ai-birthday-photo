@@ -1,7 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../constant/app_assets.dart';
 import '../../constant/app_strings.dart';
@@ -9,6 +12,7 @@ import '../../controllers/caption/caption_controller.dart';
 import '../../data/models/caption_models.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_colors.dart';
+import '../../utils/app_toast.dart';
 import '../../utils/common_button.dart';
 import '../../utils/common_text.dart';
 import 'caption_detail_screen.dart';
@@ -22,9 +26,12 @@ class CaptionScreen extends StatelessWidget {
     CaptionCategoryModel category,
   ) {
     final nameController = TextEditingController();
+    final nameFocusNode = FocusNode();
+    String? errorText;
 
     Get.bottomSheet(
-      Container(
+      StatefulBuilder(
+        builder: (context, setModalState) => Container(
         padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
         decoration: BoxDecoration(
           color: AppColors.whiteColor,
@@ -94,6 +101,15 @@ class CaptionScreen extends StatelessWidget {
             SizedBox(height: 6.h),
             TextField(
               controller: nameController,
+              focusNode: nameFocusNode,
+              inputFormatters: [
+                FilteringTextInputFormatter.deny(RegExp(r'^\s+')),
+              ],
+              onChanged: (_) {
+                if (errorText != null) {
+                  setModalState(() => errorText = null);
+                }
+              },
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 14.sp,
@@ -118,18 +134,43 @@ class CaptionScreen extends StatelessWidget {
                 ),
               ),
             ),
+            if (errorText != null) ...[
+              SizedBox(height: 6.h),
+              Row(
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 14.r,
+                    color: AppColors.errorColor,
+                  ),
+                  SizedBox(width: 4.w),
+                  CommonText.text(
+                    title: errorText!,
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w500,
+                    textColor: AppColors.errorColor,
+                  ),
+                ],
+              ),
+            ],
             SizedBox(height: 16.h),
             CommonButton.primary(
               title: AppStrings.generateCaption,
               onTap: () {
-                controller.generateCaptionsFor(
-                  nameController.text,
-                  category.shortName,
+                final trimmed = nameController.text.trim();
+                if (trimmed.isEmpty) {
+                  setModalState(() => errorText = 'Please enter a name');
+                  nameFocusNode.requestFocus();
+                  return;
+                }
+                controller.fetchCaptions(
+                  categoryId: category.id,
+                  name: trimmed,
                 );
                 Get.back();
                 Get.to(
                   () => CaptionDetailScreen(
-                    title: '${category.shortName} Caption',
+                    title: category.title,
                   ),
                 );
               },
@@ -222,6 +263,7 @@ class CaptionScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
       isScrollControlled: true,
       backgroundColor: AppColors.transparentColor,
@@ -381,10 +423,40 @@ class CaptionScreen extends StatelessWidget {
                   );
                 }
 
-                return GridView.builder(
-                  padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 20.h),
-                  physics: const ClampingScrollPhysics(),
-                  itemCount: controller.categories.length,
+                if (controller.isLoadingCategories.value &&
+                    controller.categories.isEmpty) {
+                  return GridView.builder(
+                    padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 20.h),
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: 12,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 10.w,
+                      mainAxisSpacing: 10.h,
+                      childAspectRatio: 0.88,
+                    ),
+                    itemBuilder: (_, __) => Shimmer.fromColors(
+                      baseColor: const Color(0xFFE6E6EC),
+                      highlightColor: const Color(0xFFF7F7FA),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.whiteColor,
+                          borderRadius: BorderRadius.circular(16.r),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                return RefreshIndicator(
+                  color: AppColors.primaryPink,
+                  onRefresh: controller.fetchCategories,
+                  child: GridView.builder(
+                    padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 20.h),
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: ClampingScrollPhysics(),
+                    ),
+                    itemCount: controller.categories.length,
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
                     crossAxisSpacing: 10.w,
@@ -399,7 +471,7 @@ class CaptionScreen extends StatelessWidget {
                       child: Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: 6.w,
-                          vertical: 12.h,
+                          vertical: 8.h,
                         ),
                         decoration: BoxDecoration(
                           color: cat.bgColor,
@@ -408,21 +480,46 @@ class CaptionScreen extends StatelessWidget {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            CommonText.text(title: cat.emoji, fontSize: 30),
-                            SizedBox(height: 8.h),
+                            if (cat.icon.isNotEmpty)
+                              CachedNetworkImage(
+                                imageUrl: cat.icon,
+                                width: 72.r,
+                                height: 72.r,
+                                fit: BoxFit.contain,
+                                placeholder: (_, __) => Shimmer.fromColors(
+                                  baseColor: const Color(0xFFE6E6EC),
+                                  highlightColor: const Color(0xFFF7F7FA),
+                                  child: Container(
+                                    width: 72.r,
+                                    height: 72.r,
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.whiteColor,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                                errorWidget: (_, __, ___) => Icon(
+                                  Icons.auto_awesome,
+                                  size: 28.r,
+                                  color: AppColors.primaryPink,
+                                ),
+                              ),
+                            SizedBox(height: 3.h),
                             CommonText.text(
-                              title: cat.title,
-                              fontSize: 11.5,
+                              title: cat.title.replaceFirst(' ', '\n'),
+                              fontSize: 13.5,
                               fontWeight: FontWeight.w600,
                               textColor: AppColors.blackColor,
                               textAlign: TextAlign.center,
                               maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
                       ),
                     );
                   },
+                  ),
                 );
               }),
             ),

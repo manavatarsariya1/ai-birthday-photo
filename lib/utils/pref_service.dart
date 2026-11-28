@@ -9,6 +9,7 @@ class PrefService {
   static const String refreshToken = 'refresh_token';
   static const String userCredits = 'user_credits';
   static const String hasSeenTipsSheet = 'has_seen_tips_sheet';
+  static const String hasAskedNotification = 'has_asked_notification';
   static const String userName = 'user_name';
   static const String isAppLock = 'is_app_lock';
   static const String deviceId = 'device_id';

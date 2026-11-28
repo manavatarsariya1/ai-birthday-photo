@@ -6,27 +6,41 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 import '../../constant/app_assets.dart';
+import '../../constant/app_constant.dart';
 import '../../constant/app_strings.dart';
+import '../../data/models/templates_api_model.dart';
 import '../../routes/app_routes.dart';
+import '../../services/api_service.dart';
 import '../../services/log_event_manager.dart';
 import '../../theme/app_colors.dart';
+import '../../utils/app_toast.dart';
 import '../../utils/common_button.dart';
+import '../../utils/common_autoplay_video.dart';
 import '../../utils/common_text.dart';
 import '../../utils/common_unlock_dialog.dart';
 import '../../utils/share_helper.dart';
+import '../generation/generation_screen.dart';
 import 'report_problem_screen.dart';
 import 'result_preview_screen.dart';
 
 class ResultScreen extends StatefulWidget {
   final File beforeImage;
+  final File? imageFile2;
   final bool isVideo;
   final bool isAnniversary;
+  final TemplateItemModel? template;
+  final String? resultUrl;
+  final String? jobId;
 
   const ResultScreen({
     super.key,
     required this.beforeImage,
+    this.imageFile2,
     this.isVideo = false,
     this.isAnniversary = false,
+    this.template,
+    this.resultUrl,
+    this.jobId,
   });
 
   @override
@@ -36,6 +50,23 @@ class ResultScreen extends StatefulWidget {
 class _ResultScreenState extends State<ResultScreen> {
   bool _showAfter = true;
   bool _showWatermark = true;
+  String? _reaction;
+
+  Future<void> _submitReaction(String reaction) async {
+    if (_reaction != null) return;
+    setState(() => _reaction = reaction);
+    LogEventManager.logEvent('result_${reaction}_click');
+    final jobId = widget.jobId ?? '';
+    if (jobId.isEmpty) return;
+    final response = await ApiService.post(
+      url: '${baseUrl}generations/job/$jobId/reaction',
+      body: {'reaction': reaction},
+    );
+    if (response != null &&
+        (response.statusCode == 200 || response.statusCode == 201)) {
+      AppToast.showSuccess('Reaction saved');
+    }
+  }
 
   @override
   void initState() {
@@ -75,7 +106,9 @@ class _ResultScreenState extends State<ResultScreen> {
                     Row(
                       children: [
                         GestureDetector(
-                          onTap: () => Get.to(() => const ReportProblemScreen()),
+                          onTap: () => Get.to(
+                            () => ReportProblemScreen(jobId: widget.jobId),
+                          ),
                           child: Padding(
                             padding: EdgeInsets.all(6.r),
                             child: SvgPicture.asset(
@@ -135,11 +168,26 @@ class _ResultScreenState extends State<ResultScreen> {
                     fit: StackFit.expand,
                     children: [
                       _showAfter
-                          ? Image.asset(
-                              AppAssets.templatesSample,
-                              fit: BoxFit.cover,
-                              alignment: Alignment.topCenter,
-                            )
+                          ? (widget.resultUrl != null &&
+                                    widget.resultUrl!.isNotEmpty
+                                ? ((widget.isVideo ||
+                                          widget.resultUrl!
+                                              .toLowerCase()
+                                              .endsWith('.mp4'))
+                                      ? CommonAutoPlayVideo(
+                                          videoUrl: widget.resultUrl!,
+                                          enableTapToToggle: true,
+                                        )
+                                      : Image.network(
+                                          widget.resultUrl!,
+                                          fit: BoxFit.cover,
+                                          alignment: Alignment.topCenter,
+                                        ))
+                                : Image.asset(
+                                    AppAssets.templatesSample,
+                                    fit: BoxFit.cover,
+                                    alignment: Alignment.topCenter,
+                                  ))
                           : Image.file(
                               widget.beforeImage,
                               fit: BoxFit.cover,
@@ -158,6 +206,7 @@ class _ResultScreenState extends State<ResultScreen> {
                                 LogEventManager.logEvent('result_preview_click');
                                 Get.to(
                                   () => ResultPreviewScreen(
+                                    resultUrl: widget.resultUrl,
                                     showWatermark: _showWatermark,
                                     onRemoveWatermark: () =>
                                         Get.toNamed(AppRoutes.paywall),
@@ -167,38 +216,25 @@ class _ResultScreenState extends State<ResultScreen> {
                             ),
                             SizedBox(height: 8.h),
                             _OverlayCircleBtn(
-                              icon: Icons.thumb_up_alt_outlined,
-                              onTap: () =>
-                                  LogEventManager.logEvent('result_like_click'),
+                              icon: _reaction == 'like'
+                                  ? Icons.thumb_up_alt
+                                  : Icons.thumb_up_alt_outlined,
+                              onTap: _reaction == null
+                                  ? () => _submitReaction('like')
+                                  : () {},
                             ),
                             SizedBox(height: 8.h),
                             _OverlayCircleBtn(
-                              icon: Icons.thumb_down_alt_outlined,
-                              onTap: () => LogEventManager.logEvent(
-                                  'result_dislike_click'),
+                              icon: _reaction == 'dislike'
+                                  ? Icons.thumb_down_alt
+                                  : Icons.thumb_down_alt_outlined,
+                              onTap: _reaction == null
+                                  ? () => _submitReaction('dislike')
+                                  : () {},
                             ),
                           ],
                         ),
                       ),
-
-                      // Center Play Button for Video
-                      if (widget.isVideo)
-                        Center(
-                          child: Container(
-                            width: 48.r,
-                            height: 48.r,
-                            decoration: BoxDecoration(
-                              color:
-                                  AppColors.blackColor.withValues(alpha: 0.45),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.play_arrow_rounded,
-                              size: 30.r,
-                              color: AppColors.whiteColor,
-                            ),
-                          ),
-                        ),
 
                       // Bottom-left: Before | After Toggle (Photo only)
                       if (!widget.isVideo)
@@ -327,8 +363,17 @@ class _ResultScreenState extends State<ResultScreen> {
                         icon: Icons.auto_awesome,
                         svgPath: AppAssets.icRegenerate,
                         title: 'Regenerate',
-                        onTap: () =>
-                            LogEventManager.logEvent('result_regenerate_click'),
+                        onTap: () {
+                          LogEventManager.logEvent('result_regenerate_click');
+                          Get.off(
+                            () => GenerationScreen(
+                              imageFile: widget.beforeImage,
+                              imageFile2: widget.imageFile2,
+                              isVideo: widget.isVideo,
+                              template: widget.template,
+                            ),
+                          );
+                        },
                       ),
                     ),
                     SizedBox(width: 10.w),

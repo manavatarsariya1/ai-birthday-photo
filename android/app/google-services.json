@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1077192160601",
+    "project_id": "ai-birthday-photo-app-dev",
+    "storage_bucket": "ai-birthday-photo-app-dev.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1077192160601:android:50de6369006073c6e34848",
+        "android_client_info": {
+          "package_name": "com.aibirthdayphoto.ai_birthday_photo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAyosCeX-KwPuGicEDJqaZ11SR-kjwohec"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

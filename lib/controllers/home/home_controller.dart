@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../constant/app_assets.dart';
 import '../../constant/app_constant.dart';
@@ -15,6 +16,7 @@ import '../../services/shortcut_service.dart';
 import '../../theme/app_colors.dart';
 import '../../ui/anniversary/anniversary_screen.dart';
 import '../../ui/caption/caption_screen.dart';
+import '../../utils/common_app_sheets.dart';
 import '../../utils/pref_service.dart';
 import '../reminders/reminders_controller.dart';
 import '../templates/templates_controller.dart';
@@ -106,10 +108,9 @@ class HomeController extends GetxController {
     final remindersCtrl = Get.isRegistered<RemindersController>()
         ? Get.find<RemindersController>()
         : Get.put(RemindersController());
-    final list = remindersCtrl.reminders
-        .where((r) => r.daysUntil <= 30)
-        .toList()
-      ..sort((a, b) => a.daysUntil.compareTo(b.daysUntil));
+    final list =
+        remindersCtrl.reminders.where((r) => r.daysUntil <= 30).toList()
+          ..sort((a, b) => a.daysUntil.compareTo(b.daysUntil));
     return list
         .take(5)
         .map(
@@ -132,9 +133,39 @@ class HomeController extends GetxController {
     LogEventManager.logEvent('home_view');
     _fetchHomeSections();
     Future.microtask(ShortcutService.init);
+    _checkNotificationPermission();
   }
 
-  Future<void> refreshHomeSections() => _fetchHomeSections();
+  Future<void> _checkNotificationPermission() async {
+    if (PrefService.getBool(PrefService.hasAskedNotification)) return;
+    final status = await Permission.notification.status;
+    if (status.isGranted) return;
+    await PrefService.setValue(PrefService.hasAskedNotification, true);
+    await Future.delayed(const Duration(milliseconds: 800));
+    await CommonAppSheets.showNotificationPermission();
+  }
+
+  Future<void> refreshHomeSections() =>
+      Future.wait([_fetchHomeSections(), fetchCredits()]);
+
+  Future<void> fetchCredits() async {
+    try {
+      final response = await ApiService.get(url: '${baseUrl}credits/me');
+      if (response != null && response.statusCode == 200) {
+        final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+        if (decoded['success'] == true && decoded['data'] is Map) {
+          final credits =
+              (decoded['data']['credits'] as num?)?.toInt() ?? coinsCount.value;
+          coinsCount.value = credits;
+          await PrefService.setValue(PrefService.userCredits, credits);
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Fetch credits error: $e');
+      }
+    }
+  }
 
   Future<void> _fetchHomeSections() async {
     isLoadingHomeSections.value = true;
@@ -179,6 +210,7 @@ class HomeController extends GetxController {
                                 item.imgSquare!.isNotEmpty)
                             ? item.imgSquare!
                             : AppAssets.sampleTemplate,
+                        type: item.type,
                       ),
                     )
                     .toList(),
@@ -197,6 +229,11 @@ class HomeController extends GetxController {
   }
 
   void onTabChanged(int index) {
+    if (index == 1 && selectedTabIndex.value != 1) {
+      if (Get.isRegistered<TemplatesController>()) {
+        Get.find<TemplatesController>().onTypeChanged(0);
+      }
+    }
     selectedTabIndex.value = index;
     LogEventManager.logEvent('home_bottom_tab_click', {'index': index});
   }
@@ -249,8 +286,16 @@ class HomeController extends GetxController {
     }
   }
 
-  void onTemplateTap(String templateId) {
-    LogEventManager.logEvent('home_template_click', {'template': templateId});
+  void onTemplateTap(String templateId, {String type = 'photo'}) {
+    LogEventManager.logEvent('home_template_click', {
+      'template': templateId,
+      'type': type,
+    });
+    final templatesCtrl = Get.isRegistered<TemplatesController>()
+        ? Get.find<TemplatesController>()
+        : Get.put(TemplatesController());
+    templatesCtrl.selectTypeAndCategory(type, templateId);
+    selectedTabIndex.value = 1;
   }
 
   void onViewAllTemplatesTap() {

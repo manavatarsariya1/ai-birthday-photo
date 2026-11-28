@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../constant/app_assets.dart';
 import '../../controllers/anniversary/anniversary_controller.dart';
@@ -134,6 +135,42 @@ class _AnniversaryScreenState extends State<AnniversaryScreen> {
             Expanded(
               child: Obx(() {
                 final items = controller.currentTemplates;
+                final isLoading = controller.isLoading.value;
+
+                if (!isLoading && items.isEmpty) {
+                  return RefreshIndicator(
+                    color: AppColors.primaryPink,
+                    onRefresh: controller.fetchAnniversaryTemplates,
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: SizedBox(
+                        height: 0.55.sh,
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.photo_library_outlined,
+                                size: 48.r,
+                                color:
+                                    AppColors.blackColor.withValues(alpha: 0.25),
+                              ),
+                              SizedBox(height: 10.h),
+                              CommonText.text(
+                                title: 'No templates available',
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                textColor:
+                                    AppColors.blackColor.withValues(alpha: 0.45),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
                 final count = items.isNotEmpty ? items.length : 6;
 
                 return RefreshIndicator(
@@ -166,6 +203,13 @@ class _AnniversaryScreenState extends State<AnniversaryScreen> {
                               ? CachedNetworkImage(
                                   imageUrl: imageUrl,
                                   fit: BoxFit.cover,
+                                  placeholder: (_, __) => Shimmer.fromColors(
+                                    baseColor: const Color(0xFFE6E6EC),
+                                    highlightColor: const Color(0xFFF7F7FA),
+                                    child: Container(
+                                      color: AppColors.whiteColor,
+                                    ),
+                                  ),
                                   errorWidget: (_, __, ___) => Container(
                                     color: AppColors.reminderCardBg,
                                     child: Icon(
@@ -218,14 +262,10 @@ class _AnniversaryUploadSheet extends StatefulWidget {
 }
 
 class _AnniversaryUploadSheetState extends State<_AnniversaryUploadSheet> {
-  int _tabIndex = 0; // 0 = Single Photo (Male/Female), 1 = Couple Photo
   File? _malePhoto;
   File? _femalePhoto;
-  File? _couplePhoto;
 
-  bool get _hasRequiredPhotos => _tabIndex == 0
-      ? (_malePhoto != null && _femalePhoto != null)
-      : _couplePhoto != null;
+  bool get _hasRequiredPhotos => _malePhoto != null && _femalePhoto != null;
 
   Future<void> _pickInto(void Function(File) onPicked) async {
     final path = await CommonPhotoPickerSheet.show();
@@ -305,54 +345,26 @@ class _AnniversaryUploadSheetState extends State<_AnniversaryUploadSheet> {
           ),
           SizedBox(height: 14.h),
 
-          // ── Single Photo | Couple Photo Toggle ────────────────────
-          Container(
-            padding: EdgeInsets.all(4.r),
-            decoration: BoxDecoration(
-              color: AppColors.primaryPink.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(9999.r),
-            ),
-            child: Row(
-              children: [
-                _tabBtn('Single Photo', 0),
-                _tabBtn('Couple Photo', 1),
-              ],
-            ),
-          ),
-          SizedBox(height: 14.h),
-
           // ── Upload Boxes ──────────────────────────────────────────
-          if (_tabIndex == 0)
-            Row(
-              children: [
-                Expanded(
-                  child: _UploadBox(
-                    label: 'Male',
-                    file: _malePhoto,
-                    onTap: () => _pickInto((f) => _malePhoto = f),
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: _UploadBox(
-                    label: 'Female',
-                    file: _femalePhoto,
-                    onTap: () => _pickInto((f) => _femalePhoto = f),
-                  ),
-                ),
-              ],
-            )
-          else
-            Center(
-              child: SizedBox(
-                width: 200.w,
+          Row(
+            children: [
+              Expanded(
                 child: _UploadBox(
-                  label: 'Couple',
-                  file: _couplePhoto,
-                  onTap: () => _pickInto((f) => _couplePhoto = f),
+                  label: 'Male',
+                  file: _malePhoto,
+                  onTap: () => _pickInto((f) => _malePhoto = f),
                 ),
               ),
-            ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: _UploadBox(
+                  label: 'Female',
+                  file: _femalePhoto,
+                  onTap: () => _pickInto((f) => _femalePhoto = f),
+                ),
+              ),
+            ],
+          ),
           SizedBox(height: 14.h),
 
           // ── Credits Pill ──────────────────────────────────────────
@@ -476,7 +488,7 @@ class _AnniversaryUploadSheetState extends State<_AnniversaryUploadSheet> {
                 AppToast.showError('Please add a photo');
                 return;
               }
-              final beforeFile = _tabIndex == 0 ? _malePhoto! : _couplePhoto!;
+              final beforeFile = _malePhoto!;
               Get.back();
               Get.to(
                 () => ResultScreen(beforeImage: beforeFile, isVideo: false),
@@ -499,31 +511,6 @@ class _AnniversaryUploadSheetState extends State<_AnniversaryUploadSheet> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _tabBtn(String title, int index) {
-    final isActive = _tabIndex == index;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => _tabIndex = index),
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 9.h),
-          decoration: BoxDecoration(
-            color: isActive ? AppColors.whiteColor : AppColors.transparentColor,
-            borderRadius: BorderRadius.circular(9999.r),
-          ),
-          alignment: Alignment.center,
-          child: CommonText.text(
-            title: title,
-            fontSize: 12.5,
-            fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-            textColor: isActive
-                ? AppColors.blackColor
-                : AppColors.blackColor.withValues(alpha: 0.55),
-          ),
-        ),
       ),
     );
   }

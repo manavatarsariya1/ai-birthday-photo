@@ -1,11 +1,17 @@
+import 'package:shimmer/shimmer.dart';
 import 'package:video_player/video_player.dart';
 import 'config_packages.dart';
 
 /// Reusable muted, looping, auto-playing network video widget.
 class CommonAutoPlayVideo extends StatefulWidget {
   final String videoUrl;
+  final bool enableTapToToggle;
 
-  const CommonAutoPlayVideo({super.key, required this.videoUrl});
+  const CommonAutoPlayVideo({
+    super.key,
+    required this.videoUrl,
+    this.enableTapToToggle = false,
+  });
 
   @override
   State<CommonAutoPlayVideo> createState() => _CommonAutoPlayVideoState();
@@ -92,12 +98,12 @@ class _CommonAutoPlayVideoState extends State<CommonAutoPlayVideo> {
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
-    if (_hasError || controller == null || !controller.value.isInitialized) {
+    if (_hasError) {
       return Container(
         color: AppColors.captionCardBg,
         child: Center(
           child: Icon(
-            _hasError ? Icons.videocam_off_outlined : Icons.videocam_outlined,
+            Icons.videocam_off_outlined,
             size: 28.r,
             color: AppColors.blackColor.withValues(alpha: 0.2),
           ),
@@ -105,8 +111,16 @@ class _CommonAutoPlayVideoState extends State<CommonAutoPlayVideo> {
       );
     }
 
+    if (controller == null || !controller.value.isInitialized) {
+      return Shimmer.fromColors(
+        baseColor: const Color(0xFFD6D6E0),
+        highlightColor: const Color(0xFFF5F5FA),
+        child: Container(color: AppColors.whiteColor),
+      );
+    }
+
     final size = controller.value.size;
-    return FittedBox(
+    final videoWidget = FittedBox(
       fit: BoxFit.cover,
       clipBehavior: Clip.hardEdge,
       child: SizedBox(
@@ -114,6 +128,48 @@ class _CommonAutoPlayVideoState extends State<CommonAutoPlayVideo> {
         height: size.height > 0 ? size.height : 1,
         child: VideoPlayer(controller),
       ),
+    );
+
+    if (!widget.enableTapToToggle) return videoWidget;
+
+    return ValueListenableBuilder<VideoPlayerValue>(
+      valueListenable: controller,
+      builder: (context, value, child) {
+        final isPlaying = value.isPlaying;
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            if (isPlaying) {
+              controller.pause();
+            } else {
+              controller.play();
+            }
+          },
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              child!,
+              if (!isPlaying)
+                Center(
+                  child: Container(
+                    width: 56.r,
+                    height: 56.r,
+                    decoration: BoxDecoration(
+                      color: AppColors.blackColor.withValues(alpha: 0.55),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.play_arrow_rounded,
+                      size: 34.r,
+                      color: AppColors.whiteColor,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+      child: videoWidget,
     );
   }
 }

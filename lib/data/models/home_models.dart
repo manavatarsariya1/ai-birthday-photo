@@ -22,11 +22,13 @@ class TrendingTemplateModel {
   final String id;
   final String title;
   final String imagePath;
+  final String type;
 
   const TrendingTemplateModel({
     required this.id,
     required this.title,
     required this.imagePath,
+    this.type = 'photo',
   });
 }
 

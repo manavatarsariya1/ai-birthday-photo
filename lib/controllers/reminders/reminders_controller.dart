@@ -17,6 +17,8 @@ class RemindersController extends GetxController {
 
   // Add Reminder form state
   final TextEditingController nameController = TextEditingController();
+  final FocusNode nameFocusNode = FocusNode();
+  final RxString nameErrorText = ''.obs;
   final RxString selectedOccasion = 'Birthday'.obs;
   final RxString selectedRelationship = 'Best Friend'.obs;
   final RxInt selectedMonth = DateTime.now().month.obs;
@@ -206,7 +208,8 @@ class RemindersController extends GetxController {
   void saveReminder() {
     final name = nameController.text.trim();
     if (name.isEmpty) {
-      AppToast.showError('Please enter full name');
+      nameErrorText.value = 'Please enter full name';
+      nameFocusNode.requestFocus();
       return;
     }
 
@@ -271,6 +274,7 @@ class RemindersController extends GetxController {
   @override
   void onClose() {
     nameController.dispose();
+    nameFocusNode.dispose();
     super.onClose();
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
@@ -154,6 +155,17 @@ class AddReminderScreen extends StatelessWidget {
                             ),
                             child: TextField(
                               controller: controller.nameController,
+                              focusNode: controller.nameFocusNode,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.deny(
+                                  RegExp(r'^\s+'),
+                                ),
+                              ],
+                              onChanged: (_) {
+                                if (controller.nameErrorText.value.isNotEmpty) {
+                                  controller.nameErrorText.value = '';
+                                }
+                              },
                               style: TextStyle(
                                 fontSize: 14.sp,
                                 fontWeight: FontWeight.w500,
@@ -180,6 +192,30 @@ class AddReminderScreen extends StatelessWidget {
                               ),
                             ),
                           ),
+                          Obx(() {
+                            if (controller.nameErrorText.value.isEmpty) {
+                              return const SizedBox.shrink();
+                            }
+                            return Padding(
+                              padding: EdgeInsets.only(top: 6.h),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.error_outline,
+                                    size: 14.r,
+                                    color: AppColors.errorColor,
+                                  ),
+                                  SizedBox(width: 4.w),
+                                  CommonText.text(
+                                    title: controller.nameErrorText.value,
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w500,
+                                    textColor: AppColors.errorColor,
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
                           SizedBox(height: 16.h),
                           _FieldLabel('Occasion'),
                           SizedBox(height: 8.h),

@@ -63,6 +63,7 @@ class HomeSectionItemModel {
   final String? videoRectangle;
   final bool isPremium;
   final bool hasSubcategory;
+  final String type;
 
   const HomeSectionItemModel({
     required this.id,
@@ -74,6 +75,7 @@ class HomeSectionItemModel {
     this.videoRectangle,
     this.isPremium = false,
     this.hasSubcategory = false,
+    this.type = 'photo',
   });
 
   factory HomeSectionItemModel.fromJson(Map<String, dynamic> json) {
@@ -87,6 +89,7 @@ class HomeSectionItemModel {
       videoRectangle: json['videoRectangle']?.toString(),
       isPremium: json['isPremium'] == true,
       hasSubcategory: json['hasSubcategory'] == true,
+      type: json['type']?.toString() ?? 'photo',
     );
   }
 }

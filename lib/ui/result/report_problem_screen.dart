@@ -1,8 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import '../../constant/app_constant.dart';
+import '../../routes/app_routes.dart';
+import '../../services/api_service.dart';
 import '../../services/log_event_manager.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/app_toast.dart';
@@ -10,7 +15,9 @@ import '../../utils/common_button.dart';
 import '../../utils/common_text.dart';
 
 class ReportProblemScreen extends StatefulWidget {
-  const ReportProblemScreen({super.key});
+  final String? jobId;
+
+  const ReportProblemScreen({super.key, this.jobId});
 
   @override
   State<ReportProblemScreen> createState() => _ReportProblemScreenState();
@@ -20,6 +27,7 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
   final TextEditingController _otherController = TextEditingController();
   int _selectedIndex = 0;
   String? _errorText;
+  bool _isSubmitting = false;
 
   static const List<String> _issues = [
     'Inappropriate or Sexual Content',
@@ -209,11 +217,13 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
               ),
             ),
 
-            // ── Save Report CTA ───────────────────────────────────────
+            // ── Submit Report CTA ───────────────────────────────────────
             Padding(
               padding: EdgeInsets.fromLTRB(18.w, 8.h, 18.w, 20.h),
               child: CommonButton.primary(
-                onTap: () {
+                isLoading: _isSubmitting,
+                onTap: () async {
+                  if (_isSubmitting) return;
                   if (_issues[_selectedIndex] == 'Other Issue' &&
                       _otherController.text.trim().isEmpty) {
                     setState(() {
@@ -221,13 +231,45 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
                     });
                     return;
                   }
+                  final reason = _issues[_selectedIndex] == 'Other Issue'
+                      ? _otherController.text.trim()
+                      : _issues[_selectedIndex];
                   LogEventManager.logEvent('report_problem_submit', {
-                    'issue': _issues[_selectedIndex],
+                    'issue': reason,
                   });
-                  Get.back();
-                  AppToast.showSuccess('Report submitted. Thank you!');
+                  setState(() => _isSubmitting = true);
+                  try {
+                    final response = await ApiService.post(
+                      url: '${baseUrl}reports/submit',
+                      body: {
+                        'generationId': widget.jobId ?? '',
+                        'reason': reason,
+                      },
+                    );
+                    if (!mounted) return;
+                    if (response != null &&
+                        (response.statusCode == 200 ||
+                            response.statusCode == 201)) {
+                      String msg = 'Report submitted successfully';
+                      try {
+                        final decoded =
+                            jsonDecode(response.body) as Map<String, dynamic>;
+                        if (decoded['message'] != null) {
+                          msg = decoded['message'].toString();
+                        }
+                      } catch (_) {}
+                      AppToast.showSuccess(msg);
+                      Get.offAllNamed(AppRoutes.home);
+                    } else {
+                      AppToast.showError('Failed to submit report. Try again.');
+                    }
+                  } finally {
+                    if (mounted) {
+                      setState(() => _isSubmitting = false);
+                    }
+                  }
                 },
-                title: 'Save Report',
+                title: 'Submit Report',
               ),
             ),
           ],

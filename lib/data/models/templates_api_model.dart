@@ -57,6 +57,7 @@ class TemplateItemModel {
   final int credits;
   final bool isPremium;
   final int imageCount;
+  final List<String> imageGenders;
   final bool singleFace;
 
   const TemplateItemModel({
@@ -66,6 +67,7 @@ class TemplateItemModel {
     this.credits = 1,
     this.isPremium = false,
     this.imageCount = 1,
+    this.imageGenders = const ['any'],
     this.singleFace = true,
   });
 
@@ -77,6 +79,11 @@ class TemplateItemModel {
       credits: (json['credits'] as num?)?.toInt() ?? 1,
       isPremium: json['isPremium'] == true,
       imageCount: (json['imageCount'] as num?)?.toInt() ?? 1,
+      imageGenders: json['imageGenders'] is List
+          ? (json['imageGenders'] as List)
+              .map((e) => e.toString())
+              .toList()
+          : const ['any'],
       singleFace: json['singleFace'] != false,
     );
   }

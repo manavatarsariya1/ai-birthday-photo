@@ -61,7 +61,6 @@ dependencies:
 
   # ── Permissions / Device ───────────────────────────────────
   permission_handler: ^11.3.1
-  device_info_plus: ^13.2.0
   package_info_plus: ^10.2.1
   app_tracking_transparency: ^2.0.7
 
@@ -81,6 +80,10 @@ dependencies:
   # ── Ads (Google Mobile Ads) ────────────────────────────────
   google_mobile_ads: ^9.1.0
   video_player: ^2.14.1
+  firebase_messaging: ^16.7.1
+  mobile_device_identifier: ^0.1.0
+  firebase_app_check: ^0.4.9
+  google_mlkit_face_detection: ^1.0.3
 
 dev_dependencies:
   flutter_test:

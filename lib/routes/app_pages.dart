@@ -11,6 +11,7 @@ import '../ui/creation/creation_preview_screen.dart';
 import '../ui/creation/creation_screen.dart';
 import '../ui/home/home_screen.dart';
 import '../ui/language/language_screen.dart';
+import '../ui/no_internet/no_internet_screen.dart';
 import '../ui/onboarding/onboarding_screen.dart';
 import '../ui/paywall/paywall_screen.dart';
 import '../ui/reminders/add_reminder_screen.dart';
@@ -127,6 +128,11 @@ class AppPages {
       name: AppRoutes.reportProblem,
       page: () => const ReportProblemScreen(),
       transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.noInternet,
+      page: () => const NoInternetScreen(),
+      transition: Transition.fadeIn,
     ),
   ];
 }

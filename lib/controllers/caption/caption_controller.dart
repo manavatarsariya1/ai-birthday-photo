@@ -1,108 +1,129 @@
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../constant/app_constant.dart';
 import '../../data/models/caption_models.dart';
+import '../../services/api_service.dart';
 import '../../services/log_event_manager.dart';
-import '../../theme/app_colors.dart';
 
 class CaptionController extends GetxController {
   final RxInt selectedTabIndex = 0.obs;
   final RxList<CaptionItemModel> generatedCaptions = <CaptionItemModel>[].obs;
   final RxList<CaptionItemModel> savedCaptions = <CaptionItemModel>[].obs;
+  final RxList<CaptionCategoryModel> categories = <CaptionCategoryModel>[].obs;
+  final RxBool isLoadingCategories = false.obs;
+  final RxBool isLoadingCaptions = false.obs;
+  final RxBool isLoadingMoreCaptions = false.obs;
+  int _currentPage = 1;
+  int _totalPages = 1;
+  String _currentCategoryId = '';
+  String _currentName = '';
 
-  final List<CaptionCategoryModel> categories = const [
-    CaptionCategoryModel(
-      id: 'mom',
-      title: 'Mom\nCaption',
-      shortName: 'Mom',
-      emoji: '💐',
-      bgColor: AppColors.toolPinkBg,
-    ),
-    CaptionCategoryModel(
-      id: 'dad',
-      title: 'Dad\nCaption',
-      shortName: 'Dad',
-      emoji: '👨🏻',
-      bgColor: AppColors.toolGreenBg,
-    ),
-    CaptionCategoryModel(
-      id: 'wife',
-      title: 'Wife\nCaption',
-      shortName: 'Wife',
-      emoji: '💍',
-      bgColor: AppColors.toolBlueBg,
-    ),
-    CaptionCategoryModel(
-      id: 'husband',
-      title: 'Husband\nCaption',
-      shortName: 'Husband',
-      emoji: '🤵🏻',
-      bgColor: AppColors.toolPeachBg,
-    ),
-    CaptionCategoryModel(
-      id: 'brother',
-      title: 'Brother\nCaption',
-      shortName: 'Brother',
-      emoji: '🧢',
-      bgColor: AppColors.toolPurpleBg,
-    ),
-    CaptionCategoryModel(
-      id: 'sister',
-      title: 'Sister\nCaption',
-      shortName: 'Sister',
-      emoji: '🎀',
-      bgColor: AppColors.toolCyanBg,
-    ),
-    CaptionCategoryModel(
-      id: 'son',
-      title: 'Son\nCaption',
-      shortName: 'Son',
-      emoji: '🚀',
-      bgColor: AppColors.toolPinkBg,
-    ),
-    CaptionCategoryModel(
-      id: 'daughter',
-      title: 'Daughter\nCaption',
-      shortName: 'Daughter',
-      emoji: '👑',
-      bgColor: AppColors.toolGreenBg,
-    ),
-    CaptionCategoryModel(
-      id: 'friend',
-      title: 'Friend\nCaption',
-      shortName: 'Friend',
-      emoji: '💕',
-      bgColor: AppColors.toolBlueBg,
-    ),
-    CaptionCategoryModel(
-      id: 'teenager',
-      title: 'Teenager\nCaption',
-      shortName: 'Teenager',
-      emoji: '🎧',
-      bgColor: AppColors.toolPeachBg,
-    ),
-    CaptionCategoryModel(
-      id: 'romantic',
-      title: 'Romantic\nCaption',
-      shortName: 'Romantic',
-      emoji: '💝',
-      bgColor: AppColors.toolPurpleBg,
-    ),
-    CaptionCategoryModel(
-      id: 'funny',
-      title: 'Funny\nCaption',
-      shortName: 'Funny',
-      emoji: '🎉',
-      bgColor: AppColors.toolCyanBg,
-    ),
-  ];
+  bool get hasMoreCaptions => _currentPage < _totalPages;
+
+  Future<void> fetchCaptions({
+    String? categoryId,
+    String? name,
+    bool loadMore = false,
+  }) async {
+    if (loadMore) {
+      if (isLoadingMoreCaptions.value || !hasMoreCaptions) return;
+      _currentPage++;
+      isLoadingMoreCaptions.value = true;
+    } else {
+      _currentCategoryId = categoryId ?? _currentCategoryId;
+      _currentName = name ?? _currentName;
+      _currentPage = 1;
+      _totalPages = 1;
+      generatedCaptions.clear();
+      isLoadingCaptions.value = true;
+    }
+
+    try {
+      final encodedName = Uri.encodeQueryComponent(_currentName);
+      final response = await ApiService.get(
+        url:
+            '${baseUrl}captions?categoryId=$_currentCategoryId&name=$encodedName&page=$_currentPage&limit=20',
+      );
+      if (response != null && response.statusCode == 200) {
+        final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+        if (decoded['success'] == true && decoded['data'] is Map) {
+          final data = decoded['data'] as Map<String, dynamic>;
+          final pagination = data['pagination'] as Map<String, dynamic>?;
+          _totalPages = (pagination?['totalPages'] as num?)?.toInt() ?? 1;
+
+          final rawItems = data['items'] as List? ?? const [];
+          final savedIds = savedCaptions.map((e) => e.id).toSet();
+          final parsed = rawItems.map((e) {
+            final map = e as Map<String, dynamic>;
+            final id = map['id']?.toString() ?? '';
+            return CaptionItemModel(
+              id: id,
+              text: map['content']?.toString() ?? '',
+              isFavorite: savedIds.contains(id),
+            );
+          }).toList();
+
+          if (loadMore) {
+            generatedCaptions.addAll(parsed);
+          } else {
+            generatedCaptions.assignAll(parsed);
+          }
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Captions fetch error: $e');
+      }
+    } finally {
+      isLoadingCaptions.value = false;
+      isLoadingMoreCaptions.value = false;
+    }
+  }
+
+  Future<void> fetchCategories() async {
+    isLoadingCategories.value = true;
+    try {
+      final response = await ApiService.get(
+        url: '${baseUrl}captions/categories',
+      );
+      if (response != null && response.statusCode == 200) {
+        final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+        if (decoded['success'] == true && decoded['data'] is List) {
+          final list = decoded['data'] as List;
+          categories.assignAll(
+            list
+                .asMap()
+                .entries
+                .map(
+                  (e) => CaptionCategoryModel.fromJson(
+                    e.value as Map<String, dynamic>,
+                    e.key,
+                  ),
+                )
+                .toList(),
+          );
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Caption categories fetch error: $e');
+      }
+    } finally {
+      isLoadingCategories.value = false;
+    }
+  }
 
   @override
   void onInit() {
     super.onInit();
     LogEventManager.logEvent('caption_view');
+    fetchCategories();
   }
 
   void onTabChanged(int index) {

@@ -2,9 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:device_info_plus/device_info_plus.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:mobile_device_identifier/mobile_device_identifier.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../constant/app_constant.dart';
@@ -60,17 +61,10 @@ class SplashController extends GetxController {
   Future<String> _getRealDeviceId() async {
     String resolvedId = '';
     try {
-      final deviceInfo = DeviceInfoPlugin();
-      if (!kIsWeb && Platform.isAndroid) {
-        final androidInfo = await deviceInfo.androidInfo;
-        resolvedId = androidInfo.id;
-      } else if (!kIsWeb && Platform.isIOS) {
-        final iosInfo = await deviceInfo.iosInfo;
-        resolvedId = iosInfo.identifierForVendor ?? '';
-      }
+      resolvedId = await MobileDeviceIdentifier().getDeviceId() ?? '';
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('DeviceInfo error: $e');
+        debugPrint('MobileDeviceIdentifier error: $e');
       }
     }
 
@@ -90,6 +84,11 @@ class SplashController extends GetxController {
       final rawCountry = PlatformDispatcher.instance.locale.countryCode ?? '';
       final countryCode = rawCountry.isNotEmpty ? rawCountry : 'US';
 
+      String fcmToken = '';
+      try {
+        fcmToken = await FirebaseMessaging.instance.getToken() ?? '';
+      } catch (_) {}
+
       final response = await ApiService.post(
         url: '${baseUrl}auth/guest-login',
         requiresAuth: false,
@@ -97,7 +96,7 @@ class SplashController extends GetxController {
           'deviceId': deviceId,
           'platform': !kIsWeb && Platform.isIOS ? 'ios' : 'android',
           'appVersion': realAppVersion,
-          'fcmToken': '',
+          'fcmToken': fcmToken,
           'adSource': 'organic',
           'countryCode': countryCode,
         },

@@ -14,6 +14,8 @@ import '../../ui/templates/widgets/template_sheets.dart';
 class TemplatesController extends GetxController {
   final RxInt selectedTypeIndex = 0.obs;
   final RxInt selectedCategoryIndex = 0.obs;
+  String? _pendingCategoryId;
+  int _fetchRequestId = 0;
   final RxBool isLoading = false.obs;
   final RxList<TemplateCategoryModel> apiCategories =
       <TemplateCategoryModel>[].obs;
@@ -53,17 +55,27 @@ class TemplatesController extends GetxController {
   }
 
   Future<void> fetchTemplates() async {
+    final int requestId = ++_fetchRequestId;
     isLoading.value = true;
     try {
       final response = await ApiService.get(
         url: '${baseUrl}templates/app?type=$_currentTypeQuery',
       );
+      if (requestId != _fetchRequestId) return;
       if (response != null && response.statusCode == 200) {
         final decoded = jsonDecode(response.body) as Map<String, dynamic>;
         final parsed = TemplatesApiResponse.fromJson(decoded);
         if (parsed.success) {
           apiCategories.assignAll(parsed.data);
-          selectedCategoryIndex.value = 0;
+          if (_pendingCategoryId != null) {
+            final idx = apiCategories.indexWhere(
+              (c) => c.id == _pendingCategoryId,
+            );
+            selectedCategoryIndex.value = idx >= 0 ? idx : 0;
+            _pendingCategoryId = null;
+          } else {
+            selectedCategoryIndex.value = 0;
+          }
         }
       }
     } catch (e) {
@@ -73,6 +85,31 @@ class TemplatesController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  void selectTypeAndCategory(String type, String categoryId) {
+    final normalized = type.toLowerCase().trim();
+    final typeIndex = normalized == 'video'
+        ? 1
+        : normalized == 'card'
+            ? 2
+            : 0;
+
+    if (selectedTypeIndex.value == typeIndex && apiCategories.isNotEmpty) {
+      final idx = apiCategories.indexWhere((c) => c.id == categoryId);
+      if (idx >= 0) {
+        selectedCategoryIndex.value = idx;
+        return;
+      }
+    }
+
+    _pendingCategoryId = categoryId;
+    if (selectedTypeIndex.value != typeIndex) {
+      selectedTypeIndex.value = typeIndex;
+      selectedCategoryIndex.value = 0;
+      apiCategories.clear();
+    }
+    fetchTemplates();
   }
 
   void onTypeChanged(int index) {
@@ -97,14 +134,15 @@ class TemplatesController extends GetxController {
       'type': types[selectedTypeIndex.value],
       'category': categories[selectedCategoryIndex.value],
     });
+    final items = currentTemplates;
+    final template = (items.isNotEmpty && index < items.length)
+        ? items[index]
+        : null;
     if (selectedTypeIndex.value == 2) {
-      final items = currentTemplates;
-      final imageUrl = (items.isNotEmpty && index < items.length)
-          ? items[index].image
-          : '';
+      final imageUrl = template?.image ?? '';
       Get.toNamed(AppRoutes.addCardDetails, arguments: imageUrl);
       return;
     }
-    TemplateSheets.showTipsSheet(isVideo: isVideoMode);
+    TemplateSheets.showTipsSheet(isVideo: isVideoMode, template: template);
   }
 }

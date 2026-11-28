@@ -57,8 +57,8 @@ class AppToast {
       msg: message,
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
-      backgroundColor: AppColors.successColor,
-      textColor: Colors.white,
+      backgroundColor: AppColors.whiteColor,
+      textColor: AppColors.blackColor,
       fontSize: 14.sp,
     );
   }
@@ -88,8 +88,8 @@ class AppToast {
       msg: message,
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
-      backgroundColor: AppColors.errorColor,
-      textColor: Colors.white,
+      backgroundColor: AppColors.whiteColor,
+      textColor: AppColors.blackColor,
       fontSize: 14.sp,
     );
   }
@@ -119,8 +119,8 @@ class AppToast {
       msg: message,
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
-      backgroundColor: AppColors.infoColor,
-      textColor: Colors.white,
+      backgroundColor: AppColors.whiteColor,
+      textColor: AppColors.blackColor,
       fontSize: 14.sp,
     );
   }

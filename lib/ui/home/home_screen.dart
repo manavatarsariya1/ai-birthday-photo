@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../constant/app_assets.dart';
 import '../../constant/app_strings.dart';
@@ -169,9 +170,7 @@ class HomeScreen extends StatelessWidget {
                     children: [
                       Expanded(
                         child: _HeroFeatureCard(
-                          imagePath: controller.heroPhotoUrl.value.isNotEmpty
-                              ? controller.heroPhotoUrl.value
-                              : AppAssets.samplePhoto,
+                          imagePath: controller.heroPhotoUrl.value,
                           title: controller.heroPhotoTitle.value,
                           subtitle: 'Luxe Studio Magic',
                           onTap: controller.onBirthdayPhotoTap,
@@ -180,9 +179,7 @@ class HomeScreen extends StatelessWidget {
                       SizedBox(width: 12.w),
                       Expanded(
                         child: _HeroFeatureCard(
-                          imagePath: controller.heroVideoUrl.value.isNotEmpty
-                              ? controller.heroVideoUrl.value
-                              : AppAssets.sampleVideo,
+                          imagePath: controller.heroVideoUrl.value,
                           title: controller.heroVideoTitle.value,
                           subtitle: 'Cinematic 4K Reels',
                           isVideo: true,
@@ -284,9 +281,8 @@ class HomeScreen extends StatelessWidget {
                       ),
                     );
                   }
-                  final list = controller.dynamicTrendingTemplates.isNotEmpty
-                      ? controller.dynamicTrendingTemplates
-                      : controller.trendingTemplates;
+                  final list = controller.dynamicTrendingTemplates;
+                  if (list.isEmpty) return const SizedBox.shrink();
                   return ListView.separated(
                     scrollDirection: Axis.horizontal,
                     padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -297,7 +293,10 @@ class HomeScreen extends StatelessWidget {
                       final tpl = list[index];
                       return _TrendingTemplateCard(
                         template: tpl,
-                        onTap: () => controller.onTemplateTap(tpl.id),
+                        onTap: () => controller.onTemplateTap(
+                          tpl.id,
+                          type: tpl.type,
+                        ),
                       );
                     },
                   );
@@ -489,14 +488,33 @@ class _HeroFeatureCard extends StatelessWidget {
                       : CachedNetworkImage(
                           imageUrl: imagePath,
                           fit: BoxFit.cover,
-                          errorWidget: (_, __, ___) => Image.asset(
-                            isVideo
-                                ? AppAssets.sampleVideo
-                                : AppAssets.samplePhoto,
-                            fit: BoxFit.cover,
+                          placeholder: (_, __) => Shimmer.fromColors(
+                            baseColor: const Color(0xFFE6E6EC),
+                            highlightColor: const Color(0xFFF7F7FA),
+                            child: Container(color: AppColors.whiteColor),
+                          ),
+                          errorWidget: (_, __, ___) => Container(
+                            color: AppColors.reminderCardBg,
+                            child: Icon(
+                              isVideo
+                                  ? Icons.videocam_outlined
+                                  : Icons.image_outlined,
+                              size: 28.r,
+                              color:
+                                  AppColors.blackColor.withValues(alpha: 0.2),
+                            ),
                           ),
                         ))
-                  : Image.asset(imagePath, fit: BoxFit.cover),
+                  : Container(
+                      color: AppColors.reminderCardBg,
+                      child: Icon(
+                        isVideo
+                            ? Icons.videocam_outlined
+                            : Icons.image_outlined,
+                        size: 28.r,
+                        color: AppColors.blackColor.withValues(alpha: 0.2),
+                      ),
+                    ),
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -638,6 +656,11 @@ class _TrendingTemplateCard extends StatelessWidget {
                   ? CachedNetworkImage(
                       imageUrl: template.imagePath,
                       fit: BoxFit.cover,
+                      placeholder: (_, __) => Shimmer.fromColors(
+                        baseColor: const Color(0xFFE6E6EC),
+                        highlightColor: const Color(0xFFF7F7FA),
+                        child: Container(color: AppColors.whiteColor),
+                      ),
                       errorWidget: (_, __, ___) => Image.asset(
                         AppAssets.sampleTemplate,
                         fit: BoxFit.cover,

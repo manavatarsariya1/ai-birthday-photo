@@ -36,7 +36,6 @@ export 'package:internet_connection_checker/internet_connection_checker.dart';
 
 // --- Permissions / Device ---
 export 'package:permission_handler/permission_handler.dart';
-export 'package:device_info_plus/device_info_plus.dart';
 
 // --- Sharing / Reviews ---
 export 'package:share_plus/share_plus.dart';

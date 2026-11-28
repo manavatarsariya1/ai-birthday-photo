@@ -17,6 +17,9 @@ import '../../../utils/common_button.dart';
 import '../../../utils/common_photo_picker_sheet.dart';
 import '../../../utils/common_text.dart';
 import '../../../utils/pref_service.dart';
+import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+import '../../../controllers/home/home_controller.dart';
+import '../../../data/models/templates_api_model.dart';
 import '../../camera/in_app_camera_screen.dart';
 import '../../crop/crop_screen.dart';
 import '../../generation/generation_screen.dart';
@@ -24,24 +27,30 @@ import '../../generation/generation_screen.dart';
 class TemplateSheets {
   TemplateSheets._();
 
-  static void showTipsSheet({bool isVideo = false}) {
+  static void showTipsSheet({
+    bool isVideo = false,
+    TemplateItemModel? template,
+  }) {
     if (PrefService.getBool(PrefService.hasSeenTipsSheet)) {
-      showUploadPhotoSheet(isVideo: isVideo);
+      showUploadPhotoSheet(isVideo: isVideo, template: template);
       return;
     }
     PrefService.setValue(PrefService.hasSeenTipsSheet, true);
     LogEventManager.logEvent('tips_sheet_view');
     Get.bottomSheet(
-      _TipsBottomSheet(isVideo: isVideo),
+      _TipsBottomSheet(isVideo: isVideo, template: template),
       isScrollControlled: true,
       backgroundColor: AppColors.transparentColor,
     );
   }
 
-  static void showUploadPhotoSheet({bool isVideo = false}) {
+  static void showUploadPhotoSheet({
+    bool isVideo = false,
+    TemplateItemModel? template,
+  }) {
     LogEventManager.logEvent('upload_photo_sheet_view');
     Get.bottomSheet(
-      _UploadPhotoBottomSheet(isVideo: isVideo),
+      _UploadPhotoBottomSheet(isVideo: isVideo, template: template),
       isScrollControlled: true,
       backgroundColor: AppColors.transparentColor,
     );
@@ -60,8 +69,9 @@ class TemplateSheets {
 
 class _TipsBottomSheet extends StatelessWidget {
   final bool isVideo;
+  final TemplateItemModel? template;
 
-  const _TipsBottomSheet({this.isVideo = false});
+  const _TipsBottomSheet({this.isVideo = false, this.template});
 
   @override
   Widget build(BuildContext context) {
@@ -202,7 +212,10 @@ class _TipsBottomSheet extends StatelessWidget {
             onTap: () {
               LogEventManager.logEvent('tips_choose_photo_click');
               Get.back();
-              TemplateSheets.showUploadPhotoSheet(isVideo: isVideo);
+              TemplateSheets.showUploadPhotoSheet(
+                isVideo: isVideo,
+                template: template,
+              );
             },
           ),
         ],
@@ -279,8 +292,9 @@ class _TipPhotoCard extends StatelessWidget {
 
 class _UploadPhotoBottomSheet extends StatefulWidget {
   final bool isVideo;
+  final TemplateItemModel? template;
 
-  const _UploadPhotoBottomSheet({this.isVideo = false});
+  const _UploadPhotoBottomSheet({this.isVideo = false, this.template});
 
   @override
   State<_UploadPhotoBottomSheet> createState() =>
@@ -289,6 +303,178 @@ class _UploadPhotoBottomSheet extends StatefulWidget {
 
 class _UploadPhotoBottomSheetState extends State<_UploadPhotoBottomSheet> {
   File? _selectedImage;
+  File? _selectedImage2;
+
+  int get _imageCount => (widget.template?.imageCount ?? 1) >= 2 ? 2 : 1;
+
+  String _genderLabelFor(int index) {
+    final genders = widget.template?.imageGenders ?? const [];
+    if (genders.isEmpty) return 'Any';
+    final raw = index < genders.length ? genders[index] : genders.first;
+    final trimmed = raw.trim();
+    if (trimmed.isEmpty) return 'Any';
+    return trimmed[0].toUpperCase() + trimmed.substring(1).toLowerCase();
+  }
+
+  Widget _buildUploadBox({
+    required File? imageFile,
+    required String genderLabel,
+    required ValueChanged<File> onPicked,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        TemplateSheets.showImageSourceSheet(
+          onImagePicked: (file) async {
+            final File? cropped = await Get.to<File?>(
+              () => CropScreen(imageFile: file),
+            );
+            if (cropped == null || !mounted) return;
+            if (widget.template?.singleFace == true) {
+              final detector = FaceDetector(options: FaceDetectorOptions());
+              try {
+                final inputImage = InputImage.fromFile(cropped);
+                final faces = await detector.processImage(inputImage);
+                if (faces.isEmpty) {
+                  AppToast.showError(
+                    'No face detected. Please upload a clear face photo.',
+                  );
+                  return;
+                }
+                if (faces.length > 1) {
+                  AppToast.showError(
+                    'Multiple faces detected. Please upload a single face photo.',
+                  );
+                  return;
+                }
+              } finally {
+                await detector.close();
+              }
+            }
+            if (mounted) {
+              onPicked(cropped);
+            }
+          },
+        );
+      },
+      child: CustomPaint(
+        painter: _DashedRRectPainter(
+          color: AppColors.uploadBorderPink,
+          radius: 18.r,
+          strokeWidth: 1.5.r,
+        ),
+        child: Container(
+          width: double.infinity,
+          height: 225.h,
+          decoration: BoxDecoration(
+            color: AppColors.backgroundColor.withValues(alpha: 0.35),
+            borderRadius: BorderRadius.circular(18.r),
+          ),
+          child: imageFile != null
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(17.r),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Image.file(imageFile, fit: BoxFit.cover),
+                      Positioned(
+                        top: 8.h,
+                        right: 8.w,
+                        child: Container(
+                          padding: EdgeInsets.all(6.r),
+                          decoration: BoxDecoration(
+                            color: AppColors.blackColor.withValues(alpha: 0.55),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.edit_rounded,
+                            color: AppColors.whiteColor,
+                            size: 16.r,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          width: 58.r,
+                          height: 58.r,
+                          decoration: BoxDecoration(
+                            color: AppColors.backgroundColor,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.uploadIconBorderPink,
+                              width: 1.5.r,
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.person,
+                            size: 32.r,
+                            color: AppColors.primaryPink.withValues(
+                              alpha: 0.55,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          right: -2.r,
+                          bottom: -2.r,
+                          child: Container(
+                            width: 20.r,
+                            height: 20.r,
+                            decoration: const BoxDecoration(
+                              gradient: AppColors.primaryGradient,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.add,
+                              size: 13.r,
+                              color: AppColors.whiteColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 12.h),
+                    CommonText.text(
+                      title: AppStrings.addImage,
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      textColor: AppColors.blackColor,
+                    ),
+                    SizedBox(height: 6.h),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10.w,
+                        vertical: 3.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.backgroundColor,
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: CommonText.text(
+                        title: genderLabel,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                        textColor: AppColors.primaryPink,
+                      ),
+                    ),
+                    SizedBox(height: 6.h),
+                    CommonText.text(
+                      title: AppStrings.supportedFormats,
+                      fontSize: 9.5,
+                      textColor: AppColors.blackColor.withValues(alpha: 0.45),
+                    ),
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -354,124 +540,37 @@ class _UploadPhotoBottomSheetState extends State<_UploadPhotoBottomSheet> {
           ),
           SizedBox(height: 16.h),
 
-          // Add Image Box
-          GestureDetector(
-            onTap: () {
-              TemplateSheets.showImageSourceSheet(
-                onImagePicked: (file) async {
-                  final File? cropped = await Get.to<File?>(
-                    () => CropScreen(imageFile: file),
-                  );
-                  if (cropped != null && mounted) {
-                    setState(() => _selectedImage = cropped);
-                  }
-                },
-              );
-            },
-            child: CustomPaint(
-              painter: _DashedRRectPainter(
-                color: AppColors.uploadBorderPink,
-                radius: 18.r,
-                strokeWidth: 1.5.r,
-              ),
-              child: Container(
-                width: 195.w,
-                height: 225.h,
-                decoration: BoxDecoration(
-                  color: AppColors.backgroundColor.withValues(alpha: 0.35),
-                  borderRadius: BorderRadius.circular(18.r),
+          // Add Image Box (1 or 2 based on imageCount)
+          if (_imageCount == 2)
+            Row(
+              children: [
+                Expanded(
+                  child: _buildUploadBox(
+                    imageFile: _selectedImage,
+                    genderLabel: _genderLabelFor(0),
+                    onPicked: (f) => setState(() => _selectedImage = f),
+                  ),
                 ),
-                child: _selectedImage != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(16.5.r),
-                        child: Image.file(
-                          _selectedImage!,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          height: double.infinity,
-                        ),
-                      )
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              Container(
-                                width: 58.r,
-                                height: 58.r,
-                                decoration: BoxDecoration(
-                                  color: AppColors.backgroundColor,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: AppColors.uploadIconBorderPink,
-                                    width: 1.5.r,
-                                  ),
-                                ),
-                                child: Icon(
-                                  Icons.person,
-                                  size: 32.r,
-                                  color: AppColors.primaryPink.withValues(
-                                    alpha: 0.55,
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                right: -2.r,
-                                bottom: -2.r,
-                                child: Container(
-                                  width: 20.r,
-                                  height: 20.r,
-                                  decoration: const BoxDecoration(
-                                    gradient: AppColors.primaryGradient,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    Icons.add,
-                                    size: 13.r,
-                                    color: AppColors.whiteColor,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 12.h),
-                          CommonText.text(
-                            title: AppStrings.addImage,
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w700,
-                            textColor: AppColors.blackColor,
-                          ),
-                          SizedBox(height: 6.h),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 10.w,
-                              vertical: 3.h,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.backgroundColor,
-                              borderRadius: BorderRadius.circular(12.r),
-                            ),
-                            child: CommonText.text(
-                              title: AppStrings.babyMaleFemale,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
-                              textColor: AppColors.primaryPink,
-                            ),
-                          ),
-                          SizedBox(height: 6.h),
-                          CommonText.text(
-                            title: AppStrings.supportedFormats,
-                            fontSize: 9.5,
-                            textColor: AppColors.blackColor.withValues(
-                              alpha: 0.45,
-                            ),
-                          ),
-                        ],
-                      ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: _buildUploadBox(
+                    imageFile: _selectedImage2,
+                    genderLabel: _genderLabelFor(1),
+                    onPicked: (f) => setState(() => _selectedImage2 = f),
+                  ),
+                ),
+              ],
+            )
+          else
+            SizedBox(
+              width: 195.w,
+              height: 225.h,
+              child: _buildUploadBox(
+                imageFile: _selectedImage,
+                genderLabel: _genderLabelFor(0),
+                onPicked: (f) => setState(() => _selectedImage = f),
               ),
             ),
-          ),
 
           SizedBox(height: 14.h),
 
@@ -487,12 +586,18 @@ class _UploadPhotoBottomSheetState extends State<_UploadPhotoBottomSheet> {
               children: [
                 Image.asset(AppAssets.coin, width: 16.r, height: 16.r),
                 SizedBox(width: 6.w),
-                CommonText.text(
-                  title: '200 CREDITS  |  Balance: 550',
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  textColor: AppColors.whiteColor,
-                ),
+                Obx(() {
+                  final balance = Get.isRegistered<HomeController>()
+                      ? Get.find<HomeController>().coinsCount.value
+                      : (PrefService.getInt(PrefService.userCredits) ?? 0);
+                  return CommonText.text(
+                    title:
+                        '${widget.template?.credits ?? 1} CREDITS  |  Balance: $balance',
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    textColor: AppColors.whiteColor,
+                  );
+                }),
               ],
             ),
           ),
@@ -593,17 +698,48 @@ class _UploadPhotoBottomSheetState extends State<_UploadPhotoBottomSheet> {
             title: _selectedImage != null
                 ? AppStrings.generate
                 : AppStrings.createNow,
-            onTap: () {
-              if (_selectedImage == null) {
+            onTap: () async {
+              if (_selectedImage == null ||
+                  (_imageCount == 2 && _selectedImage2 == null)) {
                 AppToast.showError('Please add a photo');
                 return;
+              }
+              if (widget.template?.singleFace == true) {
+                final detector = FaceDetector(options: FaceDetectorOptions());
+                try {
+                  final filesToCheck = <File>[
+                    _selectedImage!,
+                    if (_imageCount == 2 && _selectedImage2 != null)
+                      _selectedImage2!,
+                  ];
+                  for (final file in filesToCheck) {
+                    final inputImage = InputImage.fromFile(file);
+                    final faces = await detector.processImage(inputImage);
+                    if (faces.isEmpty) {
+                      AppToast.showError(
+                        'No face detected. Please upload a clear face photo.',
+                      );
+                      return;
+                    }
+                    if (faces.length > 1) {
+                      AppToast.showError(
+                        'Multiple faces detected. Please upload a single face photo.',
+                      );
+                      return;
+                    }
+                  }
+                } finally {
+                  await detector.close();
+                }
               }
               LogEventManager.logEvent('upload_photo_generate_click');
               Get.back();
               Get.to(
                 () => GenerationScreen(
                   imageFile: _selectedImage!,
+                  imageFile2: _imageCount == 2 ? _selectedImage2 : null,
                   isVideo: widget.isVideo,
+                  template: widget.template,
                 ),
               );
             },

@@ -56,17 +56,48 @@ class CaptionDetailScreen extends StatelessWidget {
             // ── Captions List ───────────────────────────────────
             Expanded(
               child: Obx(() {
-                return ListView.separated(
-                  padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 20.h),
-                  physics: const ClampingScrollPhysics(),
-                  itemCount: controller.generatedCaptions.length,
-                  separatorBuilder: (_, __) => SizedBox(height: 12.h),
-                  itemBuilder: (context, index) {
-                    return CaptionCardWidget(
-                      item: controller.generatedCaptions[index],
-                      controller: controller,
-                    );
+                if (controller.isLoadingCaptions.value &&
+                    controller.generatedCaptions.isEmpty) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primaryPink,
+                    ),
+                  );
+                }
+
+                return NotificationListener<ScrollNotification>(
+                  onNotification: (notification) {
+                    if (notification.metrics.pixels >=
+                            notification.metrics.maxScrollExtent - 200 &&
+                        controller.hasMoreCaptions &&
+                        !controller.isLoadingMoreCaptions.value) {
+                      controller.fetchCaptions(loadMore: true);
+                    }
+                    return false;
                   },
+                  child: ListView.separated(
+                    padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 20.h),
+                    physics: const ClampingScrollPhysics(),
+                    itemCount: controller.generatedCaptions.length +
+                        (controller.isLoadingMoreCaptions.value ? 1 : 0),
+                    separatorBuilder: (_, __) => SizedBox(height: 12.h),
+                    itemBuilder: (context, index) {
+                      if (index >= controller.generatedCaptions.length) {
+                        return Padding(
+                          padding: EdgeInsets.symmetric(vertical: 12.h),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primaryPink,
+                            ),
+                          ),
+                        );
+                      }
+                      return CaptionCardWidget(
+                        item: controller.generatedCaptions[index],
+                        controller: controller,
+                      );
+                    },
+                  ),
                 );
               }),
             ),

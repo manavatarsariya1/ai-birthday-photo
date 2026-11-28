@@ -7,17 +7,20 @@ import '../../constant/app_assets.dart';
 import '../../constant/app_strings.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_colors.dart';
+import '../../utils/common_autoplay_video.dart';
 import '../../utils/common_button.dart';
 import '../../utils/common_svg_image.dart';
 import '../../utils/common_text.dart';
 import '../../utils/share_helper.dart';
 
 class ResultPreviewScreen extends StatelessWidget {
+  final String? resultUrl;
   final bool showWatermark;
   final VoidCallback onRemoveWatermark;
 
   const ResultPreviewScreen({
     super.key,
+    this.resultUrl,
     required this.showWatermark,
     required this.onRemoveWatermark,
   });
@@ -71,7 +74,17 @@ class ResultPreviewScreen extends StatelessWidget {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      Image.asset(AppAssets.templatesSample, fit: BoxFit.cover),
+                      (resultUrl != null && resultUrl!.isNotEmpty)
+                          ? (resultUrl!.toLowerCase().endsWith('.mp4')
+                              ? CommonAutoPlayVideo(
+                                  videoUrl: resultUrl!,
+                                  enableTapToToggle: true,
+                                )
+                              : Image.network(resultUrl!, fit: BoxFit.cover))
+                          : Image.asset(
+                              AppAssets.templatesSample,
+                              fit: BoxFit.cover,
+                            ),
                       if (showWatermark)
                         Positioned(
                           right: 6.w,

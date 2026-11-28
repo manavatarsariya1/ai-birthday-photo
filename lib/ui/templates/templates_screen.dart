@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../constant/app_assets.dart';
 import '../../constant/app_strings.dart';
@@ -188,6 +189,41 @@ class TemplatesScreen extends StatelessWidget {
           Expanded(
             child: Obx(() {
               final items = controller.currentTemplates;
+              final isLoading = controller.isLoading.value;
+
+              if (!isLoading && items.isEmpty) {
+                return RefreshIndicator(
+                  color: AppColors.primaryPink,
+                  onRefresh: controller.fetchTemplates,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: SizedBox(
+                      height: 0.55.sh,
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.photo_library_outlined,
+                              size: 48.r,
+                              color: AppColors.blackColor.withValues(alpha: 0.25),
+                            ),
+                            SizedBox(height: 10.h),
+                            CommonText.text(
+                              title: 'No templates available',
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              textColor:
+                                  AppColors.blackColor.withValues(alpha: 0.45),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }
+
               final count = items.isNotEmpty ? items.length : 6;
               final isVideo = controller.isVideoMode;
 
@@ -235,6 +271,14 @@ class TemplatesScreen extends StatelessWidget {
                                     : CachedNetworkImage(
                                         imageUrl: imageUrl,
                                         fit: BoxFit.cover,
+                                        placeholder: (_, __) => Shimmer.fromColors(
+                                          baseColor: const Color(0xFFE6E6EC),
+                                          highlightColor:
+                                              const Color(0xFFF7F7FA),
+                                          child: Container(
+                                            color: AppColors.whiteColor,
+                                          ),
+                                        ),
                                         errorWidget: (_, __, ___) => Container(
                                           color: AppColors.captionCardBg,
                                           child: Icon(

@@ -1,3 +1,5 @@
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -5,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import 'constant/app_constant.dart';
+import 'firebase_options.dart';
 import 'localization/app_translations.dart';
 import 'routes/app_pages.dart';
 import 'services/log_event_manager.dart';
@@ -34,7 +37,24 @@ Future<void> main() async {
     ),
   );
 
-  // 2. Initialize SharedPreferences & Local storage
+  // 2. Initialize Firebase & SharedPreferences
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    await FirebaseAppCheck.instance.activate(
+      androidProvider: kDebugMode
+          ? AndroidProvider.debug
+          : AndroidProvider.playIntegrity,
+      appleProvider: kDebugMode
+          ? AppleProvider.debug
+          : AppleProvider.appAttest,
+    );
+  } catch (e) {
+    if (kDebugMode) {
+      debugPrint('Firebase init error: $e');
+    }
+  }
   await PrefService.init();
 
   runApp(const MyApp());

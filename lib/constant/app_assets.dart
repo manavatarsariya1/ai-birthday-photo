@@ -83,6 +83,13 @@ class AppAssets {
   static const String icHome = 'assets/icons/home.svg';
   static const String imgNoReminders = 'assets/images/reminder/no reminder.webp';
   static const String imgNoCreation = 'assets/images/setting/no creation.webp';
+  static const String imgInsufficientCoins =
+      'assets/images/setting/insufficient coin.webp';
+  static const String imgGalleryAccess =
+      'assets/images/setting/gallery access.webp';
+  static const String imgNotification =
+      'assets/images/setting/notification.webp';
+  static const String imgNoInternet = 'assets/images/setting/no internet.webp';
   static const String imgThankYou = 'assets/images/img_thank_you.webp';
   static const String icOfferWatermark = 'assets/icons/Offer Watermark.svg';
 }

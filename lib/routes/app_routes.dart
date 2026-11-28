@@ -21,4 +21,5 @@ class AppRoutes {
   static const String uninstallReason = '/uninstall_reason';
   static const String uninstallThankYou = '/uninstall_thank_you';
   static const String reportProblem = '/report_problem';
+  static const String noInternet = '/no_internet';
 }
